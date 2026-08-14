@@ -1,0 +1,32 @@
+# System & OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment / Sensitive Keys (jika nanti ada file env lokal)
+.env
+.env.local
+.env.*.local
+
+# IDE & Editor Temporary Folders
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Node & Package Caches (jika ada tool build)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Antigravity artifacts / Temporary Logs
+*.log
+tmp/
+dist/
+build/
