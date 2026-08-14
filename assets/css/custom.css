@@ -1,0 +1,44 @@
+/* Custom CSS for PT Air Minum Intan Banjar Queue System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f8fafc; /* slate-50 */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Tailwind Colors via CDN fallback */
+:root {
+  --brand-primary: #0b5c9e; /* blue-800 */
+  --brand-accent: #0088cc; /* sky-600 */
+  --brand-surface: #ebf5fb; /* sky-50 */
+}
+
+/* Print Styles for Kiosk Thermal Printer */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-area,
+  #print-area * {
+    visibility: visible;
+  }
+  #print-area {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 58mm; /* typical thermal printer size */
+    margin: 0;
+    padding: 0;
+    font-family: monospace;
+  }
+  .print-hide {
+    display: none !important;
+  }
+}
+
+/* Custom Animation Utils */
+.animate-ping-slow {
+  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}

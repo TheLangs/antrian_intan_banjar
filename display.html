@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Display Ruang Tunggu - Intan Banjar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/custom.css" />
+  </head>
+  <body class="bg-slate-50 min-h-screen flex flex-col overflow-hidden selection:bg-blue-200">
+    <!-- Top Header Full Width -->
+    <header class="bg-blue-800 text-white shadow-xl px-10 py-5 flex items-center justify-between z-10 shrink-0 border-b-4 border-blue-600">
+      <div class="flex items-center gap-5">
+        <div class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center text-blue-800 font-black text-3xl shadow-inner">IB</div>
+        <div>
+          <h1 class="text-3xl font-extrabold tracking-tight">PT Air Minum Intan Banjar (Perseroda)</h1>
+          <p class="text-blue-200 text-lg font-medium mt-1 uppercase tracking-widest">Sistem Layanan Pelanggan</p>
+        </div>
+      </div>
+      <div class="text-right">
+        <h2 id="clock" class="text-5xl font-black tabular-nums tracking-tight">00:00:00</h2>
+        <p id="date" class="text-blue-200 text-lg font-medium mt-1">Hari, Tanggal Bulan Tahun</p>
+      </div>
+    </header>
+
+    <!-- Main Grid For Lockers -->
+    <main class="flex-grow flex items-center justify-center p-8 gap-8">
+      <!-- Loket 1 -->
+      <div id="card-loket-1" class="flex-1 bg-white rounded-[2rem] shadow-xl border border-slate-200 flex flex-col overflow-hidden transition-all duration-300 transform h-full max-h-[600px]">
+        <div class="bg-blue-800 text-white text-center py-6 transition-colors duration-300">
+          <h2 class="text-4xl font-extrabold tracking-wide">LOKET 1</h2>
+        </div>
+        <div class="flex-grow flex flex-col items-center justify-center p-10 bg-slate-50/50">
+          <p class="text-2xl text-slate-500 font-semibold mb-6 tracking-widest uppercase">Nomor Antrean</p>
+          <div class="text-[140px] font-black text-slate-800 leading-none tracking-tighter" id="disp-no-1">---</div>
+        </div>
+        <div class="bg-slate-100 py-5 px-8 border-t border-slate-200 flex items-center justify-between">
+          <span class="text-slate-500 font-medium text-xl">Petugas:</span>
+          <span class="text-slate-800 font-bold text-xl" id="disp-nama-1">-</span>
+        </div>
+      </div>
+
+      <!-- Loket 2 -->
+      <div id="card-loket-2" class="flex-1 bg-white rounded-[2rem] shadow-xl border border-slate-200 flex flex-col overflow-hidden transition-all duration-300 transform h-full max-h-[600px]">
+        <div class="bg-blue-800 text-white text-center py-6 transition-colors duration-300">
+          <h2 class="text-4xl font-extrabold tracking-wide">LOKET 2</h2>
+        </div>
+        <div class="flex-grow flex flex-col items-center justify-center p-10 bg-slate-50/50">
+          <p class="text-2xl text-slate-500 font-semibold mb-6 tracking-widest uppercase">Nomor Antrean</p>
+          <div class="text-[140px] font-black text-slate-800 leading-none tracking-tighter" id="disp-no-2">---</div>
+        </div>
+        <div class="bg-slate-100 py-5 px-8 border-t border-slate-200 flex items-center justify-between">
+          <span class="text-slate-500 font-medium text-xl">Petugas:</span>
+          <span class="text-slate-800 font-bold text-xl" id="disp-nama-2">-</span>
+        </div>
+      </div>
+
+      <!-- Loket 3 -->
+      <div id="card-loket-3" class="flex-1 bg-white rounded-[2rem] shadow-xl border border-slate-200 flex flex-col overflow-hidden transition-all duration-300 transform h-full max-h-[600px]">
+        <div class="bg-blue-800 text-white text-center py-6 transition-colors duration-300">
+          <h2 class="text-4xl font-extrabold tracking-wide">LOKET 3</h2>
+        </div>
+        <div class="flex-grow flex flex-col items-center justify-center p-10 bg-slate-50/50">
+          <p class="text-2xl text-slate-500 font-semibold mb-6 tracking-widest uppercase">Nomor Antrean</p>
+          <div class="text-[140px] font-black text-slate-800 leading-none tracking-tighter" id="disp-no-3">---</div>
+        </div>
+        <div class="bg-slate-100 py-5 px-8 border-t border-slate-200 flex items-center justify-between">
+          <span class="text-slate-500 font-medium text-xl">Petugas:</span>
+          <span class="text-slate-800 font-bold text-xl" id="disp-nama-3">-</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer Running Text -->
+    <footer class="bg-blue-900 border-t border-blue-950 shrink-0 shadow-inner overflow-hidden flex items-center py-4 px-6 z-10 w-full relative">
+      <span class="bg-amber-500 text-amber-950 px-4 py-1.5 rounded-lg text-lg font-bold shadow-sm z-20">PENGUMUMAN</span>
+      <div class="flex-grow flex items-center ml-4 mt-2 overflow-hidden w-full h-[32px] relative z-0">
+        <div class="animate-[marquee_25s_linear_infinite] whitespace-nowrap text-blue-100 text-2xl font-medium tracking-wide absolute">
+          Selamat Datang di PT Air Minum Intan Banjar (Perseroda). Harap siapkan nomor antrean Anda. Pelayanan loket dimulai dari pukul 08:00 hingga 15:00. Mohon menunggu dengan tertib di area yang telah disediakan.
+        </div>
+      </div>
+    </footer>
+
+    <!-- Button to init audio context (browsers require interaction before autoplay) -->
+    <div id="init-audio" class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-slate-900/90 transition-colors">
+      <div class="bg-white p-10 rounded-3xl text-center shadow-2xl transform hover:scale-105 transition-transform">
+        <div class="w-24 h-24 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+          </svg>
+        </div>
+        <h2 class="text-3xl font-bold text-slate-800 mb-2">Mulai Display TV</h2>
+        <p class="text-slate-500 text-lg mb-8">Klik di mana saja untuk mengaktifkan sistem suara dan tampilan full screen.</p>
+        <button class="bg-blue-800 text-white font-bold text-xl px-10 py-4 rounded-xl shadow-lg hover:bg-blue-900 transition-colors">Aktifkan Sekarang</button>
+      </div>
+    </div>
+
+    <style>
+      @keyframes marquee {
+        0% {
+          left: 100%;
+          transform: translateX(0);
+        }
+        100% {
+          left: 0%;
+          transform: translateX(-100%);
+        }
+      }
+    </style>
+
+    <script type="module" src="assets/js/display.js"></script>
+  </body>
+</html>
