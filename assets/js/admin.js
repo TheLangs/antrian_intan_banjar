@@ -181,6 +181,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (typeof renderLoketCards === 'function') renderLoketCards('ov-loket-cards', data, loketData);
     if (typeof renderRecentEvents === 'function') renderRecentEvents('ov-recent-events', data);
+
+    // Call new analytics renderers
+    if (typeof renderKasirAnalytics === 'function') renderKasirAnalytics(data);
+    if (typeof renderTrafficAnalytics === 'function') renderTrafficAnalytics(data);
+    if (typeof renderDigitalAnalytics === 'function') renderDigitalAnalytics(data);
   }
 
   function formatSec(seconds) {
@@ -419,6 +424,209 @@ document.addEventListener('DOMContentLoaded', () => {
         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${b}">${x.status}</span>
       </td>
     </tr>`;
+    });
+  }
+
+  /* -------------------------------------------------------------
+     ANALYTICS & KPI RENDERERS 
+     ------------------------------------------------------------- */
+
+  function renderKasirAnalytics(data) {
+    const tbody = document.getElementById('ks-tbody');
+    const emptyMsg = document.getElementById('ks-empty');
+    if (!tbody || !emptyMsg) return;
+
+    tbody.innerHTML = '';
+    let ksMap = {};
+
+    data.forEach((x) => {
+      if (!x.nama_petugas) return;
+      let key = x.nama_petugas + '_' + (x.loket?.nama_loket || 'Unknown');
+      if (!ksMap[key]) {
+        ksMap[key] = {
+          petugas: x.nama_petugas,
+          loket: x.loket?.nama_loket || '-',
+          total: 0,
+          selesai: 0,
+          terlewat: 0,
+          sumWait: 0,
+          cntWait: 0,
+          sumSvc: 0,
+          cntSvc: 0,
+        };
+      }
+
+      let k = ksMap[key];
+      if (['selesai', 'panggil', 'terlewat'].includes(x.status)) k.total++;
+      if (x.status === 'selesai') k.selesai++;
+      if (x.status === 'terlewat') k.terlewat++;
+
+      if (x.waktu_panggil) {
+        let w = (new Date(x.waktu_panggil) - new Date(x.waktu_ambil)) / 1000;
+        if (w > 0) {
+          k.sumWait += w;
+          k.cntWait++;
+        }
+      }
+      if (x.waktu_selesai && x.waktu_panggil) {
+        let s = (new Date(x.waktu_selesai) - new Date(x.waktu_panggil)) / 1000;
+        if (s > 0) {
+          k.sumSvc += s;
+          k.cntSvc++;
+        }
+      }
+    });
+
+    let arr = Object.values(ksMap).sort((a, b) => b.total - a.total);
+    if (!arr.length) {
+      emptyMsg.classList.remove('hidden');
+      return;
+    }
+    emptyMsg.classList.add('hidden');
+
+    arr.forEach((k) => {
+      let avgWait = k.cntWait > 0 ? formatSec(k.sumWait / k.cntWait) : '-';
+      let avgSvc = k.cntSvc > 0 ? formatSec(k.sumSvc / k.cntSvc) : '-';
+      tbody.innerHTML += `
+         <tr class="hover:bg-slate-50 transition-colors">
+            <td class="px-5 py-4 font-bold text-slate-800">${k.petugas}</td>
+            <td class="px-5 py-4 text-slate-500 font-medium">${k.loket}</td>
+            <td class="px-5 py-4 text-center text-lg font-bold text-primary">${k.total}</td>
+            <td class="px-5 py-4 text-center font-bold text-emerald-600">${k.selesai}</td>
+            <td class="px-5 py-4 text-center font-bold text-red-500">${k.terlewat}</td>
+            <td class="px-5 py-4 text-center text-amber-600 font-mono text-xs">${avgWait}</td>
+            <td class="px-5 py-4 text-center text-slate-500 font-mono text-xs">${avgSvc}</td>
+         </tr>
+       `;
+    });
+  }
+
+  function renderTrafficAnalytics(data) {
+    const barsContainer = document.getElementById('tf-bars');
+    const tbody = document.getElementById('tf-tbody');
+    if (!barsContainer || !tbody) return;
+
+    let hours = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+    let tMap = {};
+    hours.forEach((h) => {
+      tMap[h] = { msk: 0, sel: 0, ter: 0, sumW: 0, cntW: 0 };
+    });
+
+    let maxVol = 0;
+
+    data.forEach((x) => {
+      let h = new Date(x.waktu_ambil).getHours();
+      if (tMap[h]) {
+        tMap[h].msk++;
+        if (x.status === 'selesai') tMap[h].sel++;
+        if (x.status === 'terlewat') tMap[h].ter++;
+
+        if (x.waktu_panggil) {
+          let w = (new Date(x.waktu_panggil) - new Date(x.waktu_ambil)) / 1000;
+          if (w > 0) {
+            tMap[h].sumW += w;
+            tMap[h].cntW++;
+          }
+        }
+        if (tMap[h].msk > maxVol) maxVol = tMap[h].msk;
+      }
+    });
+
+    barsContainer.innerHTML = '';
+    tbody.innerHTML = '';
+
+    hours.forEach((h) => {
+      let d = tMap[h];
+      // Bar chart
+      let pct = maxVol > 0 ? (d.msk / maxVol) * 100 : 0;
+
+      let barHtml = `
+          <div class="relative flex flex-col justify-end w-full group">
+            <div class="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm opacity-0 group-hover:opacity-100 mb-2 transition-opacity pointer-events-none z-10">${d.msk}</div>
+            <div class="w-full bg-accent hover:filter hover:brightness-110 transition-all rounded-t-md" style="height: ${pct}%; min-height: ${pct > 0 ? '4px' : '0'}"></div>
+          </div>
+       `;
+      barsContainer.innerHTML += barHtml;
+
+      // Table row
+      let avgWait = d.cntW > 0 ? formatSec(d.sumW / d.cntW) : '-';
+      let jamStr = String(h).padStart(2, '0') + ':00 - ' + String(h + 1).padStart(2, '0') + ':00';
+      tbody.innerHTML += `
+         <tr class="hover:bg-slate-50 transition-colors">
+            <td class="px-4 py-3 font-semibold text-slate-700">${jamStr}</td>
+            <td class="px-4 py-3 text-center font-bold text-primary">${d.msk}</td>
+            <td class="px-4 py-3 text-center font-bold text-emerald-600">${d.sel}</td>
+            <td class="px-4 py-3 text-center font-bold text-red-500">${d.ter}</td>
+            <td class="px-4 py-3 text-center text-amber-600 font-mono text-xs">${avgWait}</td>
+         </tr>
+       `;
+    });
+  }
+
+  function renderDigitalAnalytics(data) {
+    if (!document.getElementById('dg-qr-pct')) return;
+
+    let cntCetak = 0;
+    let cntQr = 0;
+
+    let hrMap = {};
+
+    data.forEach((x) => {
+      if (x.metode_tiket === 'qrcode' || x.metode_tiket === 'scan') cntQr++;
+      else cntCetak++; // physical button etc
+
+      let h = new Date(x.waktu_ambil).getHours();
+      if (!hrMap[h]) hrMap[h] = { cetak: 0, qr: 0 };
+
+      if (x.metode_tiket === 'qrcode' || x.metode_tiket === 'scan') hrMap[h].qr++;
+      else hrMap[h].cetak++;
+    });
+
+    let total = cntCetak + cntQr;
+    let pctQr = total > 0 ? Math.round((cntQr / total) * 100) : 0;
+    let pctCetak = total > 0 ? Math.round((cntCetak / total) * 100) : 0;
+
+    document.getElementById('dg-qr-pct').textContent = pctQr + '%';
+    let ring = document.getElementById('dg-ring-qr');
+    if (ring) ring.setAttribute('stroke-dasharray', pctQr + ' 100');
+
+    document.getElementById('dg-cetak-val').textContent = cntCetak;
+    document.getElementById('dg-cetak-pct').textContent = pctCetak + '% dari total';
+
+    document.getElementById('dg-qr-val').textContent = cntQr;
+    document.getElementById('dg-qr-pct2').textContent = pctQr + '% dari total';
+
+    // Hourly
+    let dgHourly = document.getElementById('dg-hourly');
+    dgHourly.innerHTML = '';
+
+    let sortedHr = Object.keys(hrMap)
+      .map(Number)
+      .sort((a, b) => a - b);
+    if (!sortedHr.length) {
+      dgHourly.innerHTML = '<p class="text-xs text-slate-400 p-2">Belum ada data distribusi tiket per jam.</p>';
+      return;
+    }
+
+    sortedHr.forEach((h) => {
+      let hrTotal = hrMap[h].cetak + hrMap[h].qr;
+      let hrPctQr = hrTotal > 0 ? Math.round((hrMap[h].qr / hrTotal) * 100) : 0;
+      let hrPctCetak = 100 - hrPctQr;
+
+      let jamStr = String(h).padStart(2, '0') + ':00';
+
+      dgHourly.innerHTML += `
+         <div class="mb-3">
+            <div class="flex justify-between text-[11px] font-bold text-slate-500 mb-1">
+              <span>${jamStr} <span class="font-normal">(${hrTotal} tiket)</span></span>
+              <span>${hrPctQr}% QR</span>
+            </div>
+            <div class="w-full h-2 rounded-full overflow-hidden flex">
+               <div class="bg-blue-300 h-full transition-all" style="width: ${hrPctCetak}%"></div>
+               <div class="bg-primary h-full transition-all" style="width: ${hrPctQr}%"></div>
+            </div>
+         </div>
+       `;
     });
   }
 });
