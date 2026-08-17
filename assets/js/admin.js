@@ -432,9 +432,6 @@ document.addEventListener('DOMContentLoaded', () => {
      ANALYTICS & KPI RENDERERS 
      ------------------------------------------------------------- */
 
-  let trafficChart = null;
-  let digitalChart = null;
-
   function renderKasirAnalytics(data) {
     const tbody = document.getElementById('ks-tbody');
     const emptyMsg = document.getElementById('ks-empty');
@@ -506,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderTrafficAnalytics(data) {
-    const barsContainer = document.getElementById('tf-apex-chart');
+    const barsContainer = document.getElementById('tf-bars');
     const tbody = document.getElementById('tf-tbody');
     if (!barsContainer || !tbody) return;
 
@@ -515,6 +512,8 @@ document.addEventListener('DOMContentLoaded', () => {
     hours.forEach((h) => {
       tMap[h] = { msk: 0, sel: 0, ter: 0, sumW: 0, cntW: 0 };
     });
+
+    let maxVol = 0;
 
     data.forEach((x) => {
       let h = new Date(x.waktu_ambil).getHours();
@@ -530,18 +529,30 @@ document.addEventListener('DOMContentLoaded', () => {
             tMap[h].cntW++;
           }
         }
+        if (tMap[h].msk > maxVol) maxVol = tMap[h].msk;
       }
     });
 
+    barsContainer.innerHTML = '';
     tbody.innerHTML = '';
-
-    let jamStrs = [];
-    let volData = [];
 
     hours.forEach((h) => {
       let d = tMap[h];
-      jamStrs.push(String(h).padStart(2, '0') + ':00');
-      volData.push(d.msk);
+      // Bar chart
+      let pct = maxVol > 0 ? (d.msk / maxVol) * 100 : 0;
+
+      let barHtml = `
+          <div class="relative flex flex-col justify-end w-full h-full group pb-1">
+            <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[11px] font-bold px-3 py-1.5 rounded-md shadow-lg opacity-0 group-hover:opacity-100 mb-2 transition-opacity pointer-events-none z-20 whitespace-nowrap">
+              ${d.msk} Tiket
+              <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
+            </div>
+            <div class="w-full bg-gradient-to-t ${pct > 0 ? 'from-accent to-blue-400' : 'from-slate-100 to-slate-50'} shadow-sm hover:brightness-110 hover:shadow-md transition-all duration-300 rounded-t-md relative z-10" style="height: ${pct}%; min-height: ${pct > 0 ? '6px' : '0'}">
+              ${pct > 0 ? '<div class="absolute inset-x-0 top-0 h-1.5 bg-white/30 rounded-t-lg"></div>' : ''}
+            </div>
+          </div>
+       `;
+      barsContainer.innerHTML += barHtml;
 
       // Table row
       let avgWait = d.cntW > 0 ? formatSec(d.sumW / d.cntW) : '-';
@@ -556,32 +567,6 @@ document.addEventListener('DOMContentLoaded', () => {
          </tr>
        `;
     });
-
-    if (barsContainer) {
-      if (!trafficChart) {
-        const options = {
-          series: [{ name: 'Volume Kunjungan', data: volData }],
-          chart: { type: 'bar', height: 280, toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
-          plotOptions: { bar: { borderRadius: 6, columnWidth: '55%' } },
-          dataLabels: { enabled: false },
-          xaxis: { categories: jamStrs, labels: { style: { colors: '#64748b', fontWeight: 600 } }, axisBorder: { show: false }, axisTicks: { show: false } },
-          yaxis: { labels: { style: { colors: '#94a3b8' } } },
-          colors: ['#0088cc'],
-          grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
-          tooltip: {
-            y: {
-              formatter: function (val) {
-                return val + ' tiket';
-              },
-            },
-          },
-        };
-        trafficChart = new ApexCharts(barsContainer, options);
-        trafficChart.render();
-      } else {
-        trafficChart.updateSeries([{ data: volData }]);
-      }
-    }
   }
 
   function renderDigitalAnalytics(data) {
@@ -607,74 +592,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let pctQr = total > 0 ? Math.round((cntQr / total) * 100) : 0;
     let pctCetak = total > 0 ? Math.round((cntCetak / total) * 100) : 0;
 
-    // Check if the old labels still exist, they might have been removed. If they do, update them.
     let qrPctLabel = document.getElementById('dg-qr-pct');
     if (qrPctLabel) qrPctLabel.textContent = pctQr + '%';
-
-    document.getElementById('dg-cetak-val').textContent = cntCetak;
-    document.getElementById('dg-cetak-pct').textContent = pctCetak + '% dari total';
-
-    document.getElementById('dg-qr-val').textContent = cntQr;
-    document.getElementById('dg-qr-pct2').textContent = pctQr + '% dari total';
-
-    // Render Apex Donut Chart
-    const donutContainer = document.getElementById('dg-apex-donut');
-    if (donutContainer) {
-      if (!digitalChart) {
-        const options = {
-          series: [cntQr, cntCetak],
-          labels: ['Digital QR', 'Cetak Fisik'],
-          chart: { type: 'donut', height: 260, fontFamily: 'Inter, sans-serif' },
-          colors: ['#0b5c9e', '#e0f2fe'],
-          plotOptions: {
-            pie: {
-              donut: {
-                size: '75%',
-                labels: {
-                  show: true,
-                  name: { show: true, color: '#64748b', fontSize: '11px' },
-                  value: { show: true, fontSize: '26px', fontWeight: 900, color: '#1e293b' },
-                  total: {
-                    show: true,
-                    showAlways: true,
-                    label: 'Persentase QR',
-                    fontSize: '10px',
-                    color: '#94a3b8',
-                    formatter: function (w) {
-                      return pctQr + '%';
-                    },
-                  },
-                },
-              },
-            },
-          },
-          dataLabels: { enabled: false },
-          legend: { show: false },
-          stroke: { width: 0 },
-        };
-        digitalChart = new ApexCharts(donutContainer, options);
-        digitalChart.render();
-      } else {
-        digitalChart.updateSeries([cntQr, cntCetak]);
-        // Update total formatter to reflect current pctQr dynamically via options update
-        digitalChart.updateOptions({
-          plotOptions: {
-            pie: {
-              donut: {
-                labels: {
-                  total: {
-                    formatter: function () {
-                      return pctQr + '%';
-                    },
-                  },
-                },
-              },
-            },
-          },
-        });
-      }
+    let ring = document.getElementById('dg-ring-qr');
+    if (ring) {
+      ring.setAttribute('stroke-dasharray', `${pctQr} 100`);
     }
 
+    let cetakVal = document.getElementById('dg-cetak-val');
+    if (cetakVal) cetakVal.textContent = cntCetak;
+
+    let cetakPct = document.getElementById('dg-cetak-pct');
+    if (cetakPct) cetakPct.textContent = pctCetak + '% dari total';
+
+    let qrVal = document.getElementById('dg-qr-val');
+    if (qrVal) qrVal.textContent = cntQr;
+
+    let qrPct2 = document.getElementById('dg-qr-pct2');
+    if (qrPct2) qrPct2.textContent = pctQr + '% dari total';
     // Hourly
     let dgHourly = document.getElementById('dg-hourly');
     dgHourly.innerHTML = '';

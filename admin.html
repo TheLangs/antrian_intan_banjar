@@ -390,8 +390,19 @@
             </button>
           </div>
         </div>
-        <div class="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
-          <div class="w-full mt-2" id="tf-apex-chart"></div>
+        <div class="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm relative overflow-hidden">
+          <!-- Background Grid Lines for Visual Metric -->
+          <div class="absolute inset-x-10 top-10 bottom-[140px] flex flex-col justify-between pointer-events-none z-0">
+            <div class="border-t border-slate-100 flex-1"></div>
+            <div class="border-t border-slate-100 flex-1"></div>
+            <div class="border-t border-slate-100 flex-1"></div>
+            <div class="border-t border-slate-100 flex-1"></div>
+            <div class="border-t border-slate-200 h-0"></div>
+          </div>
+          <div class="h-72 flex items-end justify-between gap-[2%] sm:gap-[3%] px-2 sm:px-4 border-b-2 border-slate-100 pb-2 relative z-10" id="tf-bars"></div>
+          <div class="flex justify-between text-[10px] sm:text-xs text-slate-400 font-bold mt-3 px-2 sm:px-4 font-mono">
+            <span>07:00</span><span>08:00</span><span>09:00</span><span>10:00</span><span>11:00</span><span>12:00</span><span>13:00</span><span>14:00</span><span>15:00</span><span>16:00</span>
+          </div>
           <div class="mt-6 overflow-x-auto">
             <table class="w-full text-left whitespace-nowrap min-w-[600px]">
               <thead>
@@ -434,7 +445,18 @@
           <!-- Donut-like visual -->
           <div class="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex flex-col items-center justify-center min-h-[250px]">
             <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">Rasio Metode Tiket</h4>
-            <div class="w-full w-48 h-48 flex items-center justify-center" id="dg-apex-donut"></div>
+            <div class="relative w-44 h-44">
+              <svg viewBox="0 0 36 36" class="w-full h-full -rotate-90 drop-shadow-sm">
+                <!-- Track -->
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f1f5f9" stroke-width="3.5" />
+                <!-- Progress -->
+                <circle id="dg-ring-qr" cx="18" cy="18" r="15.9" fill="none" class="transition-all duration-1000 ease-out" style="stroke: #0b5c9e" stroke-width="3.5" stroke-dasharray="0 100" stroke-linecap="round" />
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span class="text-3xl font-black tracking-tighter text-slate-800" id="dg-qr-pct">0%</span>
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1">Digital QR</span>
+              </div>
+            </div>
           </div>
 
           <!-- Detail Cards -->
@@ -687,8 +709,9 @@
       </section>
     </main>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-config.js"></script>
     <script type="module" src="assets/js/admin.js"></script>
   </body>
 </html>
