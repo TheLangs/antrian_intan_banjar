@@ -7,22 +7,25 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = 'admin_login.html';
     return;
   }
-  document.getElementById('admin-name').textContent = localStorage.getItem('ib_admin_name') || 'Admin';
+  const adminNameEl = document.getElementById('admin-name');
+  if (adminNameEl) {
+    adminNameEl.textContent = localStorage.getItem('ib_admin_name') || 'Admin';
+  }
 
   // UI elements
-  const inpStart = document.getElementById('date-start');
-  const inpEnd = document.getElementById('date-end');
-  const btnFilter = document.getElementById('btn-filter');
-  const btnExport = document.getElementById('btn-export');
-  const btnLogout = document.getElementById('btn-logout');
+  const inpStart = document.getElementById('ov-date');
+  const inpEnd = document.getElementById('ov-date'); // Bento uses single date for overview
+  const btnFilter = document.getElementById('btn-filter') || document.createElement('button'); // Fallback if no filter button
+  const btnExport = document.querySelector('[data-export="overview"]') || document.createElement('button');
+  const btnLogout = document.getElementById('btn-logout') || document.querySelector('[id="btn-logout"]');
 
-  const kpiTotal = document.getElementById('kpi-total');
-  const kpiSelesai = document.getElementById('kpi-selesai');
-  const kpiTerlewat = document.getElementById('kpi-terlewat');
-  const kpiAvgWait = document.getElementById('kpi-avg-wait');
+  const kpiTotal = document.getElementById('ov-total');
+  const kpiSelesai = document.getElementById('ov-selesai');
+  const kpiTerlewat = document.getElementById('ov-terlewat');
+  const kpiAvgWait = document.getElementById('ov-avg-wait');
 
-  const tableBody = document.getElementById('table-body');
-  const tableEmpty = document.getElementById('table-empty');
+  const tableBody = document.getElementById('table-body') || document.getElementById('hs-tbody');
+  const tableEmpty = document.getElementById('table-empty') || document.getElementById('hs-empty');
   const loader = document.getElementById('loader');
 
   let currentReportData = [];
@@ -31,51 +34,80 @@ document.addEventListener('DOMContentLoaded', () => {
   const today = new Date();
   // Offset local timezone for ISO format
   const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-  inpStart.value = localToday;
-  inpEnd.value = localToday;
+  if (inpStart) inpStart.value = localToday;
+  if (inpEnd) inpEnd.value = localToday;
 
   // Events
-  btnFilter.addEventListener('click', fetchData);
-  btnLogout.addEventListener('click', () => {
-    localStorage.clear();
-    window.location.href = 'admin_login.html';
+  if (btnFilter) btnFilter.addEventListener('click', fetchData);
+  if (btnLogout)
+    btnLogout.addEventListener('click', () => {
+      localStorage.clear();
+      window.location.href = 'admin_login.html';
+    });
+  if (btnExport) btnExport.addEventListener('click', generatePDF);
+  if (inpStart) inpStart.addEventListener('change', fetchData);
+
+  // Sidebar Tabs Logic
+  const navItems = document.querySelectorAll('.nav-item[data-tab]');
+  const tabContents = document.querySelectorAll('.tab-content');
+  navItems.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      navItems.forEach((n) => n.classList.remove('active', 'text-slate-800'));
+      tabContents.forEach((t) => t.classList.remove('active'));
+      btn.classList.add('active');
+      const targetId = 'tab-' + btn.getAttribute('data-tab');
+      document.getElementById(targetId)?.classList.add('active');
+    });
   });
-  btnExport.addEventListener('click', generatePDF);
 
   // Initial Load
   fetchData();
 
   async function fetchData() {
-    loader.classList.remove('hidden');
-    tableEmpty.classList.add('hidden');
-    tableBody.innerHTML = '';
+    if (loader) loader.classList.remove('hidden');
+    if (tableEmpty) {
+      tableEmpty.classList.add('hidden');
+    }
+    if (tableBody) {
+      tableBody.innerHTML = '';
+    }
 
     try {
-      // Append times to date range for full day coverage (ISO)
-      const startD = new Date(inpStart.value + 'T00:00:00').toISOString();
-      const endD = new Date(inpEnd.value + 'T23:59:59').toISOString();
+      const today = new Date();
+      let startD = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0] + 'T00:00:00.000Z';
+      let endD = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0] + 'T23:59:59.999Z';
 
-      const { data, error } = await supabase.from('antrian').select('*, loket(nama_loket)').gte('waktu_ambil', startD).lte('waktu_ambil', endD).order('id_antrian', { ascending: true });
+      if (inpStart && inpStart.value) {
+        startD = new Date(inpStart.value + 'T00:00:00').toISOString();
+        endD = new Date(inpStart.value + 'T23:59:59').toISOString();
+      }
 
-      if (error) throw error;
+      const [resAntrian, resLoket] = await Promise.all([
+        supabase.from('antrian').select('*, loket(nama_loket)').gte('waktu_ambil', startD).lte('waktu_ambil', endD).order('id_antrian', { ascending: true }),
+        supabase.from('loket').select('*'),
+      ]);
 
-      currentReportData = data || [];
-      processAndRender(currentReportData);
+      if (resAntrian.error) throw resAntrian.error;
+
+      currentReportData = resAntrian.data || [];
+      processAndRender(currentReportData, resLoket.data || []);
     } catch (err) {
       console.error(err);
       alert('Gagal memuat data laporan.');
     } finally {
-      loader.classList.add('hidden');
+      if (loader) loader.classList.add('hidden');
     }
   }
 
-  function processAndRender(data) {
+  function processAndRender(data, loketData = []) {
     if (data.length === 0) {
-      tableEmpty.classList.remove('hidden');
+      if (tableEmpty) tableEmpty.classList.remove('hidden');
       kpiTotal.textContent = '0';
       kpiSelesai.textContent = '0';
       kpiTerlewat.textContent = '0';
       kpiAvgWait.textContent = '0m 0s';
+      if (typeof renderLoketCards === 'function') renderLoketCards('ov-loket-cards', data, loketData);
       return;
     }
 
@@ -129,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="px-6 py-4 text-emerald-600">${svcTimeStr}</td>
                 <td class="px-6 py-4">${statusBadge}</td>
             `;
-      tableBody.appendChild(tr);
+      if (tableBody) tableBody.appendChild(tr);
     });
 
     // Update KPIs
@@ -142,6 +174,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       kpiAvgWait.textContent = '0m 0s';
     }
+
+    // Extra Data Hooks for Bento
+    const kpiSuccessPct = document.getElementById('ov-success-pct');
+    if (kpiSuccessPct) kpiSuccessPct.textContent = Math.round((cntSelesai / (cntTotal || 1)) * 100) + '%';
+
+    if (typeof renderLoketCards === 'function') renderLoketCards('ov-loket-cards', data, loketData);
+    if (typeof renderRecentEvents === 'function') renderRecentEvents('ov-recent-events', data);
   }
 
   function formatSec(seconds) {
@@ -251,5 +290,135 @@ document.addEventListener('DOMContentLoaded', () => {
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 Export PDF`;
     }
+  }
+
+  /* LOKET CARDS & EVENTS */
+  function renderLoketCards(containerId, data, loketData = []) {
+    const c = document.getElementById(containerId);
+    if (!c) return;
+    c.innerHTML = '';
+
+    let ls = {
+      'Loket 1': { n: 'Loket 1', pet: 'Offline / Kosong', cnt: 0, currentTicket: '-', status: 'Offline', ts: 0 },
+      'Loket 2': { n: 'Loket 2', pet: 'Offline / Kosong', cnt: 0, currentTicket: '-', status: 'Offline', ts: 0 },
+      'Loket 3': { n: 'Loket 3', pet: 'Offline / Kosong', cnt: 0, currentTicket: '-', status: 'Offline', ts: 0 },
+    };
+
+    // Pre-fill with live active session data
+    loketData.forEach((l) => {
+      let nm = l.nama_loket || 'Loket ' + l.id_loket;
+      if (ls[nm]) {
+        // Track true session state
+        ls[nm].isOnline = !!l.session_token;
+      }
+    });
+
+    data.forEach((x) => {
+      if (!x.id_loket) return;
+      let nm = x.loket?.nama_loket || 'Loket ' + x.id_loket;
+      if (!ls[nm]) {
+        ls[nm] = { n: nm, pet: 'Offline / Kosong', cnt: 0, currentTicket: '-', status: 'Offline', ts: 0, isOnline: false };
+      }
+      if (['panggil', 'selesai', 'terlewat'].includes(x.status)) ls[nm].cnt++;
+
+      let time = new Date(x.waktu_panggil || x.waktu_ambil).getTime();
+      if (x.status === 'panggil' && (!ls[nm].ts || time > ls[nm].ts)) {
+        ls[nm].currentTicket = x.kode_antrian + '-' + String(x.nomor_antrian).padStart(3, '0');
+        ls[nm].pet = x.nama_petugas || 'Petugas';
+        ls[nm].status = 'Melayani';
+        ls[nm].ts = time;
+      } else if (x.status === 'selesai' && (!ls[nm].ts || time > ls[nm].ts)) {
+        ls[nm].pet = x.nama_petugas || 'Petugas';
+        if (ls[nm].status !== 'Melayani') ls[nm].status = 'Standby';
+        ls[nm].ts = time;
+      }
+    });
+
+    // Cleanup statuses based on true session state
+    Object.values(ls).forEach((s) => {
+      if (!s.isOnline) {
+        s.status = 'Offline';
+        s.pet = 'Offline / Kosong';
+        s.currentTicket = '-';
+      } else if (s.status === 'Offline') {
+        // Online, but hasn't done any transactions yet today
+        s.status = 'Standby';
+        s.pet = '(Menunggu Antrean)';
+      }
+    });
+
+    let arr = Object.values(ls).sort((a, b) => a.n.localeCompare(b.n));
+
+    arr.forEach((s) => {
+      let isServing = s.status === 'Melayani';
+      let isStandby = s.status === 'Standby';
+      let isOffline = s.status === 'Offline';
+
+      let dotColor = isServing ? 'bg-emerald-500 animate-pulse' : isStandby ? 'bg-amber-400' : 'bg-slate-300';
+      let badgeBg = isServing ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : isStandby ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-slate-50 text-slate-500 border-slate-200';
+      let topBorder = isServing
+        ? '<div class="absolute top-0 left-0 w-full h-[4px] bg-emerald-500"></div>'
+        : isStandby
+          ? '<div class="absolute top-0 left-0 w-full h-[4px] bg-amber-400"></div>'
+          : '<div class="absolute top-0 left-0 w-full h-[4px] bg-slate-300"></div>';
+      let opacityClass = isOffline ? 'opacity-70' : 'opacity-100';
+
+      c.innerHTML += `<div class="bg-white rounded-[24px] p-6 shadow-sm border border-slate-200 relative overflow-hidden flex flex-col justify-between ${opacityClass} transition-all">
+      ${topBorder}
+      <div class="flex justify-between items-start mb-4 mt-1">
+        <div>
+          <h3 class="text-[16px] font-bold text-slate-800 flex items-center gap-2">
+            ${s.n}
+            <span class="relative flex h-2.5 w-2.5">
+              ${isServing ? '<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>' : ''}
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 ${dotColor}"></span>
+            </span>
+          </h3>
+          <p class="text-[11px] text-slate-500 mt-1 font-medium italic">${s.pet}</p>
+        </div>
+        <div class="px-2.5 py-1 ${badgeBg} rounded-full border">
+          <span class="text-[10px] font-bold uppercase tracking-wider">${s.status}</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-100">
+        <div>
+           <p class="text-[11px] text-slate-400 font-semibold mb-1">Berjalan</p>
+           <p class="text-[26px] font-bold ${isServing ? 'text-emerald-600' : 'text-slate-400'} tracking-tight leading-none">${s.currentTicket}</p>
+        </div>
+        <div class="text-right">
+           <p class="text-[11px] text-slate-400 font-semibold mb-1">Total Layan</p>
+           <p class="text-[22px] font-bold text-slate-700 tracking-tight leading-none">${s.cnt}</p>
+        </div>
+      </div>
+    </div>`;
+    });
+  }
+
+  function renderRecentEvents(containerId, data) {
+    const c = document.getElementById(containerId);
+    if (!c) return;
+    c.innerHTML = '';
+    let sorted = [...data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
+
+    if (!sorted.length) {
+      c.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-xs text-slate-500">Belum ada aktivitas.</td></tr>';
+      return;
+    }
+
+    sorted.forEach((x) => {
+      let b = x.status === 'selesai' ? 'bg-emerald-50 text-emerald-600' : x.status === 'panggil' ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-500';
+      let t = x.kode_antrian + '-' + String(x.nomor_antrian).padStart(3, '0');
+      c.innerHTML += `<tr class="hover:bg-slate-50/50 transition-colors">
+      <td class="py-3 px-6 border-b border-slate-100">
+        <span class="font-bold text-slate-800 text-[13px]">${t}</span>
+      </td>
+      <td class="py-3 px-6 border-b border-slate-100 text-[11px] font-medium text-slate-500">
+        ${x.loket?.nama_loket || 'Loket'} - ${x.nama_petugas || 'Petugas'}
+      </td>
+      <td class="py-3 px-6 border-b border-slate-100">
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${b}">${x.status}</span>
+      </td>
+    </tr>`;
+    });
   }
 });

@@ -3,15 +3,22 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #f8fafc; /* slate-50 */
+  background-color: #f8fafc; /* --color-background */
+  color: #1e293b; /* --color-foreground */
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Tailwind Colors via CDN fallback */
+/* Custom Design System Colors */
 :root {
-  --brand-primary: #0b5c9e; /* blue-800 */
-  --brand-accent: #0088cc; /* sky-600 */
-  --brand-surface: #ebf5fb; /* sky-50 */
+  --color-primary: #0b5c9e; /* blue-800 */
+  --color-accent: #0088cc; /* sky-600 */
+  --color-surface: #ebf5fb; /* sky-50 */
+  --color-foreground: #1e293b; /* slate-800 */
+  --color-background: #f8fafc; /* slate-50 */
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
 /* Print Styles for Kiosk Thermal Printer */

@@ -10,13 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const successDesc = document.getElementById('success-desc');
   const qrContainer = document.getElementById('qr-container');
   const dispNoAntrean = document.getElementById('disp-no-antrean');
-  const countdownEl = document.getElementById('countdown');
   const printArea = document.getElementById('print-area');
   const printNo = document.getElementById('print-no');
   const printTime = document.getElementById('print-time');
   const loading = document.getElementById('loading');
-
-  let countdownInterval;
 
   btnPrint.addEventListener('click', () => processQueueOption('cetak'));
   btnQr.addEventListener('click', () => processQueueOption('qr'));
@@ -91,21 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
         correctLevel: QRCode.CorrectLevel.H,
       });
     }
-
-    // Auto restart countdown
-    let timeLeft = 10;
-    countdownEl.textContent = timeLeft;
-
-    if (countdownInterval) clearInterval(countdownInterval);
-
-    countdownInterval = setInterval(() => {
-      timeLeft--;
-      countdownEl.textContent = timeLeft;
-      if (timeLeft <= 0) {
-        clearInterval(countdownInterval);
-        resetKiosk();
-      }
-    }, 1000);
   }
 
   function resetKiosk() {
@@ -115,6 +97,5 @@ document.addEventListener('DOMContentLoaded', () => {
     dispNoAntrean.textContent = '';
     qrContainer.innerHTML = '';
     printArea.classList.add('hidden');
-    if (countdownInterval) clearInterval(countdownInterval);
   }
 });

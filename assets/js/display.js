@@ -5,6 +5,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const elClock = document.getElementById('clock');
   const elDate = document.getElementById('date');
   const initAudioOverlay = document.getElementById('init-audio');
+  const btnFullscreen = document.getElementById('btn-fullscreen');
+
+  // Fullscreen Management
+  btnFullscreen.addEventListener('click', () => {
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch((err) => console.error(err));
+    }
+  });
+
+  document.addEventListener('fullscreenchange', () => {
+    if (document.fullscreenElement) {
+      btnFullscreen.classList.add('hidden');
+    } else {
+      btnFullscreen.classList.remove('hidden');
+    }
+  });
 
   // UI mapping for 3 Loket
   const counters = {

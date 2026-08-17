@@ -1,15 +1,21 @@
 # Product Requirement Document (PRD)
+
 ## Sistem Informasi Manajemen Antrean Hybrid (3 Loket Kasir)
+
 ### Architecture: HTML5, Tailwind CSS, Vanilla JS, Supabase (PostgreSQL + Realtime), GitHub Pages
 
 ---
 
 ### 1. RINGKASAN EKSEKUTIF
-Sistem Informasi Manajemen Antrean Hybrid adalah aplikasi web static-hosted client-side yang terintegrasi secara langsung dengan **Supabase** (BaaS - Backend as a Service). Dirancang untuk mengelola antrean 3 loket kasir secara simultan dengan sinkronisasi data instan milidetik menggunakan **Supabase Realtime WebSockets**. Sistem mendukung pendaftaran tiket fisik (thermal) / tiket digital QR, operasional kasir FIFO tanpa password yang diamankan dengan session locking, layar monitor ruang tunggu TV 16:9, dan dashboard analitik eksekutif dengan export PDF client-side.
+
+Sistem Informasi Manajemen Antrean Hybrid adalah aplikasi web static-hosted client-side yang terintegrasi secara langsung dengan **Supabase** (BaaS - Backend as a Service). Dirancang untuk mengelola antrean 3 loket kasir secara simultan
+dengan sinkronisasi data instan milidetik menggunakan **Supabase Realtime WebSockets**. Sistem mendukung pendaftaran tiket fisik (thermal) / tiket digital QR, operasional kasir FIFO tanpa password yang diamankan dengan session locking,
+layar monitor ruang tunggu TV 16:9, dan dashboard analitik eksekutif dengan export PDF client-side.
 
 ---
 
 ### 2. ARSITEKTUR TEKNOLOGI & INFRASTRUKTUR
+
 - **Frontend / Client**: HTML5, Tailwind CSS (via CDN), Vanilla JavaScript (ES6 Modules).
 - **Backend & Database**: Supabase (PostgreSQL 15+, Supabase Realtime, PostgREST, Database RPC Functions).
 - **Client SDK**: `@supabase/supabase-js` (via unpkg/jsdelivr CDN).
@@ -38,7 +44,7 @@ CREATE TABLE IF NOT EXISTS public.loket (
 
 -- Seed Data Loket
 INSERT INTO public.loket (id_loket, nomor_loket, nama_loket)
-VALUES 
+VALUES
     (1, 1, 'Loket 1'),
     (2, 2, 'Loket 2'),
     (3, 3, 'Loket 3')
@@ -177,35 +183,57 @@ $$;
 ### 4. SPESIFIKASI MODUL & INTERAKSI CLIENT-SIDE
 
 #### 4.1 Modul Kios Registrasi Tiket (`index.html`)
+
 - Dua aksi utama: **Cetak Tiket Fisik** & **Scan QR Code (Tiket Digital)**.
 - Menjalankan `supabase.rpc('generate_queue_number', { p_metode, p_access_token })`.
 - Cetak Tiket: Trigger browser print template ESC/POS 58mm / 80mm.
 - QR Code: Menghasilkan QR code ke URL `ticket.html?token={access_token}`.
 
 #### 4.2 Modul Pantau Tiket Smartphone (`ticket.html`)
+
 - Menggunakan `supabase.channel('public:antrian')` Realtime Subscription.
 - Mendengarkan perubahan baris yang memiliki `access_token` sesuai URL.
 - Menampilkan update instan: status antrean, estimasi sisa orang di depan, dan notifikasi saat loket memanggil.
 
 #### 4.3 Modul Display Monitor TV Ruang Tunggu (`display.html`)
+
 - Fullscreen 16:9 responsive Tailwind grid layout.
 - Realtime Listener: `supabase.channel('display-channel').on('postgres_changes', { event: '*', schema: 'public', table: 'antrian' })`.
 - Begitu ada record berubah menjadi `status = 'dipanggil'`, sistem memicu:
   1. Highlight visual ring card loket bersangkutan (`animate-pulse`).
   2. Suara Bel Notifikasi (Audio Ding-Dong).
-  3. Suara Web Speech API Bahasa Indonesia: *"Nomor antrean A, 0, 0, 5, silakan menuju Loket 1"*.
+  3. Suara Web Speech API Bahasa Indonesia: _"Nomor antrean A, 0, 0, 5, silakan menuju Loket 1"_.
 
 #### 4.4 Modul Kasir Operasional (`counter.html`)
-- Login Session Lock tanpa password: Cek `loket.last_seen`. Jika `NOW() - last_seen < 30 detik` dan `session_token` berbeda, tolak login.
-- Tombol Aksi:
+
+- **Status Presence (Online/Offline) & Session Lock**:
+  - Status _default_ semua loket adalah **Offline** (Kosong).
+  - Saat petugas memilih loket dan memasukkan nama, loket menjadi **Online**, nama petugas terekam, dan sesi terkunci (_session locked_). Petugas tidak perlu login ulang selama tab browser masih terbuka.
+  - **Proteksi Login Ganda**: Jika loket sedang _Online_ (dicek dari `NOW() - last_seen < 30 detik`) dan ada perangkat/browser lain mencoba login ke loket yang sama, sistem akan menolak akses tersebut.
+  - **Heartbeat & Auto-Offline**: Browser kasir mengirim ping `UPDATE loket SET last_seen = NOW()` setiap 10 detik. Jika kasir menutup browser tanpa menekan tombol _Logout_, loket otomatis terbaca **Offline** oleh sistem setelah 30 detik
+    tidak menerima _heartbeat_.
+- **Integrasi Monitoring Admin**: Status _Online/Offline_ dan nama petugas yang sedang berjaga ini disiarkan secara _real-time_ menggunakan Supabase WebSockets untuk ditampilkan di Menu Overview pada Dashboard Admin.
+- **Tombol Aksi**:
   - **Panggil Berikutnya**: Trigger `call_next_queue(p_id_loket, p_nama_petugas)`.
   - **Selesai**: Update `status = 'selesai'`, `waktu_selesai = NOW()`.
   - **Lewati**: Update `status = 'terlewat'`, `waktu_selesai = NOW()`.
-  - **Panggil Ulang (Recall)**: Broadcast event pemanggilan ulang audio ke Display TV.
-  - **Panggil Kembali Terlewat**: Update item antrean terlewat spesifik menjadi `status = 'dipanggil'`.
-- Heartbeat: Mengirimkan ping `UPDATE loket SET last_seen = NOW()` setiap 10 detik.
+  - **Panggil Ulang (Recall)**: Broadcast event pemanggilan ulang audio (bel & suara) ke Display TV.
+  - **Panggil Kembali Terlewat**: Memanggil ulang nasabah dari daftar khusus antrean terlewat.
 
-#### 4.5 Modul Admin Analitik & Export PDF (`admin.html`)
-- Login admin sederhana via kredensial Supabase.
-- Widget KPI Real-time: Total antrean, Selesai, Terlewat, Rata-rata waktu tunggu & waktu layanan.
-- **Export Single Executive PDF**: Menggunakan `jsPDF` + `jspdf-autotable` yang menghitung metrik durasi langsung dari query PostgreSQL Supabase.
+#### 4.5 Modul Admin Analitik (Multi-Tab Dashboard & SPA)
+
+- **Struktur Tata Letak (Sidebar Navigation)**: Mengadopsi sistem _Single Page Application_ (SPA) menggunakan Vanilla JS di dalam `admin.html`. Menu sidebar dikelompokkan ke dalam 3 hierarki utama untuk pemisahan fungsional.
+- **Mekanisme Ekspor Client-Side**: Unduh data difilter secara _real-time_ lewat browser menggunakan `jsPDF` dan `jspdf-autotable`.
+
+**Kategori 1: Monitoring & Operasional**
+
+1. 🏠 **Live Operations & Queue Hub**: Ringkasan Eksekutif KPI realtime (total antrean, % keberhasilan, rata-rata waktu layanan). Ekspor PDF.
+2. 📢 **Live Display & Announcement Control**: Konfigurasi teks berjalan (Running Text) darurat untuk TV ruang tunggu.
+3. 🔐 **Loket & Session Manager**: Memantau status login kasir (_online/offline_) dan fitur admin `Force Release` session jika browser kasir _crash_.
+
+**Kategori 2: Analitik & Kinerja** 4. 👥 **Evaluasi & Kinerja Kasir**: Tabel performa (dilayani vs terlewat, rata-rata durasi). Ekspor PDF. 5. 📈 **Beban & Analisis Jam Sibuk**: Grafik batang kedatangan pelanggan per jam operasional (peak
+hours). Ekspor PDF. 6. 📱 **Saluran & Penetrasi Digital**: Visualisasi perbandingan rasio pelanggan tiket cetak vs tiket digital (QR). Ekspor PDF.
+
+**Kategori 3: Riwayat & Kontrol Sistem** 7. 🗄️ **Riwayat Transaksi & Log Antrean**: Filter lengkap status transaksi spesifik untuk audit. Ekspor Data Mentah CSV/Excel. 8. 🔎 **Audit Trail & Log Aktivitas**: Catatan aktivitas penekanan
+tombol kasir seperti panggil, lewati, atau recall. 9. ⚙️ **Pengaturan Umum (Terpisah di Bawah)**: Penyetoran data konfigurasi sistem seperti jam buka tutup loket jarak jauh. 10. 👤 **Manajemen Akun Admin (Terpisah di Bawah)**: Menambah
+daftar administrator dengan akses login ke dashboard analitik ini (tanpa mengganggu pola fixed login kasir). 11. 📖 **Panduan Pengguna / Quick Start Guide (Terpisah di Bawah)**: Pusat panduan ringkas terpadu (SOP dan Troubleshooting).

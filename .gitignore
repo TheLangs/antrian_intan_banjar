@@ -30,3 +30,13 @@ yarn-error.log*
 tmp/
 dist/
 build/
+.agent/
+skills-lock.json
+.gemini/
+*.js
+!assets/**/*.js
+!*/**/*.js
+mcp_out.json
+.env
+tmp/
+

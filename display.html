@@ -11,7 +11,7 @@
     <!-- Top Header Full Width -->
     <header class="bg-blue-800 text-white shadow-xl px-10 py-5 flex items-center justify-between z-10 shrink-0 border-b-4 border-blue-600">
       <div class="flex items-center gap-5">
-        <div class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center text-blue-800 font-black text-3xl shadow-inner">IB</div>
+        <img src="assets/images/logo-intan-banjar.png" alt="Logo Intan Banjar" class="w-20 h-20 object-contain" />
         <div>
           <h1 class="text-3xl font-extrabold tracking-tight">PT Air Minum Intan Banjar (Perseroda)</h1>
           <p class="text-blue-200 text-lg font-medium mt-1 uppercase tracking-widest">Sistem Layanan Pelanggan</p>
@@ -80,6 +80,13 @@
         </div>
       </div>
     </footer>
+
+    <!-- Fullscreen Toggle Button -->
+    <button id="btn-fullscreen" class="fixed bottom-24 right-6 bg-blue-800 text-white p-4 rounded-full shadow-2xl border-4 border-white hover:bg-blue-900 transition-all hover:scale-105 z-50" title="Mode Full Screen">
+      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+      </svg>
+    </button>
 
     <!-- Button to init audio context (browsers require interaction before autoplay) -->
     <div id="init-audio" class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-slate-900/90 transition-colors">
