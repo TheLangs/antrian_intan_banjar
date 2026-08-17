@@ -541,9 +541,9 @@ document.addEventListener('DOMContentLoaded', () => {
       let pct = maxVol > 0 ? (d.msk / maxVol) * 100 : 0;
 
       let barHtml = `
-          <div class="relative flex flex-col justify-end w-full group">
+          <div class="relative flex flex-col justify-end w-full h-full group">
             <div class="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm opacity-0 group-hover:opacity-100 mb-2 transition-opacity pointer-events-none z-10">${d.msk}</div>
-            <div class="w-full bg-accent hover:filter hover:brightness-110 transition-all rounded-t-md" style="height: ${pct}%; min-height: ${pct > 0 ? '4px' : '0'}"></div>
+            <div class="w-full bg-accent hover:filter hover:brightness-110 transition-all rounded-t-sm" style="height: ${pct}%; min-height: ${pct > 0 ? '4px' : '0'}"></div>
           </div>
        `;
       barsContainer.innerHTML += barHtml;
