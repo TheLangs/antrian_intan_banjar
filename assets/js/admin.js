@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const kpiTotal = document.getElementById('ov-total');
   const kpiSelesai = document.getElementById('ov-selesai');
-  const kpiTerlewat = document.getElementById('ov-terlewat');
   const kpiAvgWait = document.getElementById('ov-avg-wait');
+  const kpiAvgSvc = document.getElementById('ov-avg-svc');
 
   const tableBody = document.getElementById('table-body') || document.getElementById('hs-tbody');
   const tableEmpty = document.getElementById('table-empty') || document.getElementById('hs-empty');
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
       processAndRender(currentReportData, resLoket.data || []);
     } catch (err) {
       console.error(err);
-      alert('Gagal memuat data laporan.');
+      alert('Gagal memuat data laporan: ' + err.message);
     } finally {
       if (loader) loader.classList.add('hidden');
     }
@@ -103,10 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function processAndRender(data, loketData = []) {
     if (data.length === 0) {
       if (tableEmpty) tableEmpty.classList.remove('hidden');
-      kpiTotal.textContent = '0';
-      kpiSelesai.textContent = '0';
-      kpiTerlewat.textContent = '0';
-      kpiAvgWait.textContent = '0m 0s';
+      if (kpiTotal) kpiTotal.textContent = '0';
+      if (kpiSelesai) kpiSelesai.textContent = '0';
+      if (kpiAvgWait) kpiAvgWait.textContent = '0m 0s';
+      if (kpiAvgSvc) kpiAvgSvc.textContent = '0m 0s';
       if (typeof renderLoketCards === 'function') renderLoketCards('ov-loket-cards', data, loketData);
       return;
     }
@@ -164,15 +164,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (tableBody) tableBody.appendChild(tr);
     });
 
-    // Update KPIs
-    kpiTotal.textContent = cntTotal;
-    kpiSelesai.textContent = cntSelesai;
-    kpiTerlewat.textContent = cntTerlewat;
+    // Update KPIs with safe checks
+    if (kpiTotal) kpiTotal.textContent = cntTotal;
+    if (kpiSelesai) kpiSelesai.textContent = cntSelesai;
 
-    if (waitCount > 0) {
-      kpiAvgWait.textContent = formatSec(totalWaitTimeSec / waitCount);
-    } else {
-      kpiAvgWait.textContent = '0m 0s';
+    if (kpiAvgWait) {
+      if (waitCount > 0) {
+        kpiAvgWait.textContent = formatSec(totalWaitTimeSec / waitCount);
+      } else {
+        kpiAvgWait.textContent = '0m 0s';
+      }
     }
 
     // Extra Data Hooks for Bento
