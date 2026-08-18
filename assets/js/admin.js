@@ -206,14 +206,24 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${m}m ${s}s`;
   }
 
-  function generatePDF() {
+  function generatePDF(e) {
     if (currentReportData.length === 0) {
       alert('Tidak ada data untuk diekspor!');
       return;
     }
 
-    btnExport.disabled = true;
-    btnExport.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span> Memproses...';
+    const clickedBtn = e && e.currentTarget ? e.currentTarget : btnExport;
+    const exportType = clickedBtn.getAttribute('data-export') || 'overview';
+
+    // Check if it's the history CSV export
+    if (exportType === 'history') {
+      alert('Fitur CSV sedang dalam optimasi. Gunakan ekspor PDF pada Ringkasan untuk data lengkap.');
+      return;
+    }
+
+    const originalHtml = clickedBtn.innerHTML;
+    clickedBtn.disabled = true;
+    clickedBtn.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span> Memproses...';
 
     try {
       const { jsPDF } = window.jspdf;
@@ -225,17 +235,24 @@ document.addEventListener('DOMContentLoaded', () => {
       doc.setTextColor(11, 92, 158); // #0B5C9E (Brand Primary)
       doc.text('PT AIR MINUM INTAN BANJAR (PERSERODA)', 14, 20);
 
+      const titles = {
+        overview: 'Laporan Eksekutif Performa Sistem Analitik Antrean',
+        kasir: 'Laporan Kinerja Kasir & Operator',
+        traffic: 'Laporan Beban & Analisis Jam Sibuk',
+        digital: 'Laporan Penetrasi & Metode Pengambilan Tiket',
+      };
+
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(12);
       doc.setTextColor(50, 50, 50);
-      doc.text('Laporan Eksekutif Performa Sistem Analitik Antrean.', 14, 28);
+      doc.text(titles[exportType] || titles['overview'], 14, 28);
 
       const realStart = document.getElementById('ov-date')?.value || new Date().toISOString().split('T')[0];
       const realEnd = document.getElementById('ov-date')?.value || new Date().toISOString().split('T')[0];
       doc.setFontSize(10);
       doc.text(`Periode Cetak: ${new Date().toLocaleDateString('id-ID')} | Tanggal Data: ${new Date(realStart).toLocaleDateString('id-ID')} s/d ${new Date(realEnd).toLocaleDateString('id-ID')}`, 14, 34);
 
-      // --- Executive KPI Summary Section ---
+      // --- Executive KPI Summary Section for ALL modes ---
       doc.setFillColor(241, 245, 249); // slate-100 banner
       doc.rect(14, 40, 269, 20, 'F');
 
@@ -243,7 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
       doc.setFontSize(11);
       doc.setTextColor(30, 41, 59);
 
-      // Calculate active metrics from currentReportData
       let sSelesai = 0,
         sTerlewat = 0,
         sSumW = 0,
@@ -267,69 +283,130 @@ document.addEventListener('DOMContentLoaded', () => {
       doc.text(`TERLEWAT: ${sTerlewat}`, 150, 52);
       doc.text(`RATA-RATA WAKTU TUNGGU: ${sWait}`, 210, 52);
 
-      // Prep Table Data
-      const tableColumn = ['ID', 'Nomor', 'Platform', 'Status', 'Loket', 'Petugas', 'Pukul Ambil', 'Pukul Panggil', 'Pukul Selesai', 'Wt. Tunggu', 'Wt. Layan'];
-      const tableRows = [];
+      let tableColumn = [];
+      let tableRows = [];
+      let cStyles = {};
 
-      currentReportData.forEach((item) => {
-        let waitTimeStr = '-';
-        let svcTimeStr = '-';
+      if (exportType === 'kasir') {
+        tableColumn = ['Kasir/Loket', 'Total Diambil', 'Sukses Dilayani', 'Terlewat', 'Wt. Tunggu (Rata-rata)', 'Wt. Layan (Rata-rata)'];
+        let dict = {};
+        currentReportData.forEach((d) => {
+          let nm = d.loket?.nama_loket || 'Tanpa Loket';
+          if (!dict[nm]) dict[nm] = { nm, t: 0, s: 0, ter: 0, tw: 0, cw: 0, ts: 0, cs: 0 };
+          dict[nm].t++;
+          if (d.status === 'selesai') dict[nm].s++;
+          if (d.status === 'terlewat') dict[nm].ter++;
+          if (d.waktu_panggil) {
+            const w = (new Date(d.waktu_panggil) - new Date(d.waktu_ambil)) / 1000;
+            if (w > 0) {
+              dict[nm].tw += w;
+              dict[nm].cw++;
+            }
+          }
+          if (d.waktu_selesai && d.waktu_panggil) {
+            const s = (new Date(d.waktu_selesai) - new Date(d.waktu_panggil)) / 1000;
+            if (s > 0) {
+              dict[nm].ts += s;
+              dict[nm].cs++;
+            }
+          }
+        });
+        Object.values(dict)
+          .sort((a, b) => b.t - a.t)
+          .forEach((x) => {
+            tableRows.push([x.nm, x.t, x.s, x.ter, x.cw > 0 ? formatSec(x.tw / x.cw) : '-', x.cs > 0 ? formatSec(x.ts / x.cs) : '-']);
+          });
+        cStyles = { 0: { fontStyle: 'bold' }, 1: { halign: 'center' }, 2: { halign: 'center' } };
+      } else if (exportType === 'traffic') {
+        tableColumn = ['Jam/Waktu (WIT)', 'Volume Masuk', 'Sukses Dilayani', 'Rata-rata Wt. Tunggu'];
+        let dict = {};
+        currentReportData.forEach((d) => {
+          let h = new Date(d.waktu_ambil).getHours();
+          if (isNaN(h)) return;
+          let label = `${String(h).padStart(2, '0')}:00 - ${String(h + 1).padStart(2, '0')}:00`;
+          if (!dict[h]) dict[h] = { label, t: 0, s: 0, tw: 0, cw: 0 };
+          dict[h].t++;
+          if (d.status === 'selesai') dict[h].s++;
+          if (d.waktu_panggil) {
+            const w = (new Date(d.waktu_panggil) - new Date(d.waktu_ambil)) / 1000;
+            if (w > 0) {
+              dict[h].tw += w;
+              dict[h].cw++;
+            }
+          }
+        });
+        let keys = Object.keys(dict)
+          .map(Number)
+          .sort((a, b) => a - b);
+        keys.forEach((k) => {
+          let x = dict[k];
+          tableRows.push([x.label, x.t, x.s, x.cw > 0 ? formatSec(x.tw / x.cw) : '-']);
+        });
+        cStyles = { 0: { fontStyle: 'bold' }, 1: { halign: 'center' }, 2: { halign: 'center' } };
+      } else if (exportType === 'digital') {
+        tableColumn = ['Metode Tiket', 'Total Pengambilan', 'Persentase', 'Rata-rata Wt. Tunggu'];
+        let dict = {};
+        currentReportData.forEach((d) => {
+          let nm = (d.metode_tiket || 'OFFLINE KIOSK').toUpperCase();
+          if (!dict[nm]) dict[nm] = { nm, t: 0, tw: 0, cw: 0 };
+          dict[nm].t++;
+          if (d.waktu_panggil) {
+            const w = (new Date(d.waktu_panggil) - new Date(d.waktu_ambil)) / 1000;
+            if (w > 0) {
+              dict[nm].tw += w;
+              dict[nm].cw++;
+            }
+          }
+        });
+        Object.values(dict)
+          .sort((a, b) => b.t - a.t)
+          .forEach((x) => {
+            tableRows.push([x.nm, x.t, Math.round((x.t / sTtl) * 100) + '%', x.cw > 0 ? formatSec(x.tw / x.cw) : '-']);
+          });
+        cStyles = { 0: { fontStyle: 'bold' }, 1: { halign: 'center' }, 2: { halign: 'center' } };
+      } else {
+        // default Overview
+        tableColumn = ['ID', 'Nomor', 'Platform', 'Status', 'Loket', 'Petugas', 'Pukul Ambil', 'Pukul Panggil', 'Pukul Selesai', 'Wt. Tunggu', 'Wt. Layan'];
+        currentReportData.forEach((item) => {
+          let waitTimeStr = '-';
+          let svcTimeStr = '-';
 
-        if (item.waktu_panggil) {
-          const w = (new Date(item.waktu_panggil) - new Date(item.waktu_ambil)) / 1000;
-          if (w > 0) waitTimeStr = formatSec(w);
-        }
+          if (item.waktu_panggil) {
+            const w = (new Date(item.waktu_panggil) - new Date(item.waktu_ambil)) / 1000;
+            if (w > 0) waitTimeStr = formatSec(w);
+          }
 
-        if (item.waktu_selesai && item.waktu_panggil) {
-          const s = (new Date(item.waktu_selesai) - new Date(item.waktu_panggil)) / 1000;
-          if (s > 0) svcTimeStr = formatSec(s);
-        }
+          if (item.waktu_selesai && item.waktu_panggil) {
+            const s = (new Date(item.waktu_selesai) - new Date(item.waktu_panggil)) / 1000;
+            if (s > 0) svcTimeStr = formatSec(s);
+          }
 
-        const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
+          const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
 
-        const row = [
-          item.id_antrian,
-          noLengkap,
-          (item.metode_tiket || '').toUpperCase(),
-          (item.status || '').toUpperCase(),
-          item.loket?.nama_loket || '-',
-          item.nama_petugas || '-',
-          item.waktu_ambil ? new Date(item.waktu_ambil).toLocaleTimeString('id-ID') : '-',
-          item.waktu_panggil ? new Date(item.waktu_panggil).toLocaleTimeString('id-ID') : '-',
-          item.waktu_selesai ? new Date(item.waktu_selesai).toLocaleTimeString('id-ID') : '-',
-          waitTimeStr,
-          svcTimeStr,
-        ];
-        tableRows.push(row);
-      });
-
-      // Trigger AutoTable Plugin
-      doc.autoTable({
-        head: [tableColumn],
-        body: tableRows,
-        startY: 65, // Start below the KPI header box
-        theme: 'striped',
-        headStyles: { fillColor: [11, 92, 158] },
-        styles: { fontSize: 8 },
-        columnStyles: {
+          tableRows.push([
+            item.id_antrian,
+            noLengkap,
+            (item.metode_tiket || '').toUpperCase(),
+            (item.status || '').toUpperCase(),
+            item.loket?.nama_loket || '-',
+            item.petugas || '-',
+            item.waktu_ambil ? new Date(item.waktu_ambil).toLocaleTimeString('id-ID') : '-',
+            item.waktu_panggil ? new Date(item.waktu_panggil).toLocaleTimeString('id-ID') : '-',
+            item.waktu_selesai ? new Date(item.waktu_selesai).toLocaleTimeString('id-ID') : '-',
+            waitTimeStr,
+            svcTimeStr,
+          ]);
+        });
+        cStyles = {
           0: { halign: 'center', cellWidth: 15 },
           1: { fontStyle: 'bold', halign: 'center', cellWidth: 18 },
           2: { halign: 'center' },
           3: { halign: 'center' },
-        },
-      });
-
-      // Doc Stamp
-      doc.setFontSize(8);
-      doc.setTextColor(150, 150, 150);
-      doc.text(`Digenerate oleh sistem pada: ${new Date().toLocaleString('id-ID')}`, 14, doc.internal.pageSize.getHeight() - 10);
-
-      // Save
-      doc.save(`Laporan_Antrean_Intan_Banjar_${new Date().toISOString().split('T')[0]}.pdf`);
+        };
+      }
     } catch (e) {
       console.error(e);
       alert('Gagal merender PDF: ' + e.message);
-      
     } finally {
       // Reset Btn
       btnExport.disabled = false;
