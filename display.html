@@ -23,53 +23,8 @@
       </div>
     </header>
 
-    <!-- Main Grid For Lockers -->
-    <main class="flex-grow flex items-center justify-center p-8 gap-8">
-      <!-- Loket 1 -->
-      <div id="card-loket-1" class="flex-1 bg-white rounded-[2rem] shadow-xl border border-slate-200 flex flex-col overflow-hidden transition-all duration-300 transform h-full max-h-[600px]">
-        <div class="bg-blue-800 text-white text-center py-6 transition-colors duration-300">
-          <h2 class="text-4xl font-extrabold tracking-wide">LOKET 1</h2>
-        </div>
-        <div class="flex-grow flex flex-col items-center justify-center p-10 bg-slate-50/50">
-          <p class="text-2xl text-slate-500 font-semibold mb-6 tracking-widest uppercase">Nomor Antrean</p>
-          <div class="text-[140px] font-black text-slate-800 leading-none tracking-tighter" id="disp-no-1">---</div>
-        </div>
-        <div class="bg-slate-100 py-5 px-8 border-t border-slate-200 flex items-center justify-between">
-          <span class="text-slate-500 font-medium text-xl">Petugas:</span>
-          <span class="text-slate-800 font-bold text-xl" id="disp-nama-1">-</span>
-        </div>
-      </div>
-
-      <!-- Loket 2 -->
-      <div id="card-loket-2" class="flex-1 bg-white rounded-[2rem] shadow-xl border border-slate-200 flex flex-col overflow-hidden transition-all duration-300 transform h-full max-h-[600px]">
-        <div class="bg-blue-800 text-white text-center py-6 transition-colors duration-300">
-          <h2 class="text-4xl font-extrabold tracking-wide">LOKET 2</h2>
-        </div>
-        <div class="flex-grow flex flex-col items-center justify-center p-10 bg-slate-50/50">
-          <p class="text-2xl text-slate-500 font-semibold mb-6 tracking-widest uppercase">Nomor Antrean</p>
-          <div class="text-[140px] font-black text-slate-800 leading-none tracking-tighter" id="disp-no-2">---</div>
-        </div>
-        <div class="bg-slate-100 py-5 px-8 border-t border-slate-200 flex items-center justify-between">
-          <span class="text-slate-500 font-medium text-xl">Petugas:</span>
-          <span class="text-slate-800 font-bold text-xl" id="disp-nama-2">-</span>
-        </div>
-      </div>
-
-      <!-- Loket 3 -->
-      <div id="card-loket-3" class="flex-1 bg-white rounded-[2rem] shadow-xl border border-slate-200 flex flex-col overflow-hidden transition-all duration-300 transform h-full max-h-[600px]">
-        <div class="bg-blue-800 text-white text-center py-6 transition-colors duration-300">
-          <h2 class="text-4xl font-extrabold tracking-wide">LOKET 3</h2>
-        </div>
-        <div class="flex-grow flex flex-col items-center justify-center p-10 bg-slate-50/50">
-          <p class="text-2xl text-slate-500 font-semibold mb-6 tracking-widest uppercase">Nomor Antrean</p>
-          <div class="text-[140px] font-black text-slate-800 leading-none tracking-tighter" id="disp-no-3">---</div>
-        </div>
-        <div class="bg-slate-100 py-5 px-8 border-t border-slate-200 flex items-center justify-between">
-          <span class="text-slate-500 font-medium text-xl">Petugas:</span>
-          <span class="text-slate-800 font-bold text-xl" id="disp-nama-3">-</span>
-        </div>
-      </div>
-    </main>
+    <!-- Main Grid For Lockers (Dynamically injected via JS) -->
+    <main id="display-grid" class="flex-grow flex flex-row flex-wrap items-center justify-center p-8 gap-8"></main>
 
     <!-- Footer Running Text -->
     <footer class="bg-blue-900 border-t border-blue-950 shrink-0 shadow-inner overflow-hidden flex items-center py-4 px-6 z-10 w-full relative">

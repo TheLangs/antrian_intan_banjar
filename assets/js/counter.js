@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnPanggil = document.getElementById('btn-panggil');
   const btnSelesai = document.getElementById('btn-selesai');
   const btnLewati = document.getElementById('btn-lewati');
-  const btnRecall = document.getElementById('btn-recall');
   const btnLogout = document.getElementById('btn-logout');
   const btnRefresh = document.getElementById('btn-refresh');
 
@@ -43,7 +42,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   btnPanggil.addEventListener('click', callNext);
   btnSelesai.addEventListener('click', () => setStatus('selesai'));
   btnLewati.addEventListener('click', () => setStatus('terlewat'));
-  btnRecall.addEventListener('click', broadcastRecall);
   btnLogout.addEventListener('click', logout);
   btnRefresh.addEventListener('click', async () => {
     showLoader();
@@ -136,31 +134,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } finally {
       hideLoader();
     }
-  }
-
-  async function broadcastRecall() {
-    if (!currentActiveId) return;
-
-    btnRecall.disabled = true;
-
-    // Broadcast custom event for Display TV
-    const activeNumber = elActiveNomor.textContent;
-    const channel = supabase.channel('display-channel');
-
-    await channel.send({
-      type: 'broadcast',
-      event: 'recall',
-      payload: {
-        id_loket: parseInt(idLoket),
-        nomor_lengkap: activeNumber,
-      },
-    });
-
-    btnRecall.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>';
-    setTimeout(() => {
-      btnRecall.disabled = false;
-      btnRecall.innerHTML = 'Panggil Ulang';
-    }, 2000);
   }
 
   async function fetchTerlewat() {

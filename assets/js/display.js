@@ -22,24 +22,52 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // UI mapping for 3 Loket
-  const counters = {
-    1: {
-      card: document.getElementById('card-loket-1'),
-      no: document.getElementById('disp-no-1'),
-      nama: document.getElementById('disp-nama-1'),
-    },
-    2: {
-      card: document.getElementById('card-loket-2'),
-      no: document.getElementById('disp-no-2'),
-      nama: document.getElementById('disp-nama-2'),
-    },
-    3: {
-      card: document.getElementById('card-loket-3'),
-      no: document.getElementById('disp-no-3'),
-      nama: document.getElementById('disp-nama-3'),
-    },
-  };
+  const displayGrid = document.getElementById('display-grid');
+  let counters = {};
+
+  async function initDisplayGrid() {
+    try {
+      const { data, error } = await supabase.from('loket').select('*').order('id_loket', { ascending: true });
+      if (error) throw error;
+
+      displayGrid.innerHTML = '';
+      counters = {};
+
+      data.forEach((loket) => {
+        const id = loket.id_loket;
+        const card = document.createElement('div');
+        // We use min-w and flex-1 to allow flexible wrap scaling if there are many lokets
+        card.className = 'flex-1 min-w-[300px] max-w-[450px] bg-white rounded-[2rem] shadow-xl border border-slate-200 flex flex-col overflow-hidden transition-all duration-300 transform h-[450px] xl:h-[600px] min-h-[400px]';
+        card.id = `card-loket-${id}`;
+        card.innerHTML = `
+          <div class="bg-blue-800 text-white text-center py-6 transition-colors duration-300">
+            <h2 class="text-3xl xl:text-4xl font-extrabold tracking-wide">${loket.nama_loket.toUpperCase()}</h2>
+          </div>
+          <div class="flex-grow flex flex-col items-center justify-center p-6 xl:p-10 bg-slate-50/50">
+            <p class="text-xl xl:text-2xl text-slate-500 font-semibold mb-4 xl:mb-6 tracking-widest uppercase">Nomor Antrean</p>
+            <div class="text-[100px] xl:text-[140px] font-black text-slate-800 leading-none tracking-tighter" id="disp-no-${id}">---</div>
+          </div>
+          <div class="bg-slate-100 py-4 xl:py-5 px-6 xl:px-8 border-t border-slate-200 flex items-center justify-between">
+            <span class="text-slate-500 font-medium text-lg xl:text-xl">Petugas:</span>
+            <span class="text-slate-800 font-bold text-lg xl:text-xl" id="disp-nama-${id}">-</span>
+          </div>
+        `;
+        displayGrid.appendChild(card);
+
+        // Map elements
+        counters[id] = {
+          card: card,
+          no: card.querySelector(`#disp-no-${id}`),
+          nama: card.querySelector(`#disp-nama-${id}`),
+        };
+      });
+
+      // Proceed with initial queue fetch ONLY after DOM grid is built
+      fetchInitialActive();
+    } catch (e) {
+      console.error('Error init display:', e);
+    }
+  }
 
   let audioContextAllowed = false;
   let isSpeaking = false;
@@ -62,8 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(updateTime, 1000);
   updateTime();
 
-  // Initial Fetch
-  fetchInitialActive();
+  // Initial DOM and Fetch
+  initDisplayGrid();
 
   // Realtime Listener
   setupRealtime();
@@ -89,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
 
       // clear defaults
-      [1, 2, 3].forEach((id) => updateCounterUI(id, '---', '-'));
+      Object.keys(counters).forEach((id) => updateCounterUI(id, '---', '-'));
 
       if (data && data.length > 0) {
         // map loket to UI

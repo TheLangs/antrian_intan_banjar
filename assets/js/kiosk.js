@@ -1,6 +1,7 @@
 import { supabase } from './supabaseClient.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+  let resetTimer = null;
   const btnPrint = document.getElementById('btn-print');
   const btnQr = document.getElementById('btn-qr');
   const btnDone = document.getElementById('btn-done');
@@ -42,6 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function showSuccessState(data, metode) {
+    if (resetTimer) clearTimeout(resetTimer);
+
     loading.classList.add('hidden');
     actionPanel.classList.add('hidden');
     successPanel.classList.remove('hidden');
@@ -88,9 +91,19 @@ document.addEventListener('DOMContentLoaded', () => {
         correctLevel: QRCode.CorrectLevel.H,
       });
     }
+
+    // Auto-Reset Timeout based on UX method
+    const timeoutMs = metode === 'cetak' ? 7000 : 15000;
+    resetTimer = setTimeout(() => {
+      resetKiosk();
+    }, timeoutMs);
   }
 
   function resetKiosk() {
+    if (resetTimer) {
+      clearTimeout(resetTimer);
+      resetTimer = null;
+    }
     successPanel.classList.add('hidden');
     successPanel.classList.remove('flex');
     actionPanel.classList.remove('hidden');
