@@ -323,10 +323,13 @@ document.addEventListener('DOMContentLoaded', () => {
       let cStyles = {};
 
       if (exportType === 'kasir') {
-        tableColumn = ['Kasir/Loket', 'Total Diambil', 'Sukses Dilayani', 'Terlewat', 'Wt. Tunggu (Rata-rata)', 'Wt. Layan (Rata-rata)'];
+        tableColumn = ['Kasir / Petugas', 'Total Diambil', 'Sukses Dilayani', 'Terlewat', 'Wt. Tunggu (Rata-rata)', 'Wt. Layan (Rata-rata)'];
         let dict = {};
         currentReportData.forEach((d) => {
-          let nm = d.loket?.nama_loket || 'Tanpa Loket';
+          let petugas = d.nama_petugas || 'Tanpa Petugas';
+          let loket = d.loket?.nama_loket || 'Tanpa Loket';
+          let nm = petugas + ' (' + loket + ')';
+
           if (!dict[nm]) dict[nm] = { nm, t: 0, s: 0, ter: 0, tw: 0, cw: 0, ts: 0, cs: 0 };
           dict[nm].t++;
           if (d.status === 'selesai') dict[nm].s++;
@@ -379,10 +382,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         cStyles = { 0: { fontStyle: 'bold' }, 1: { halign: 'center' }, 2: { halign: 'center' } };
       } else if (exportType === 'digital') {
-        tableColumn = ['Metode Tiket', 'Total Pengambilan', 'Persentase', 'Rata-rata Wt. Tunggu'];
+        tableColumn = ['Saluran Tiket', 'Total Pengambilan', 'Persentase', 'Rata-rata Wt. Tunggu'];
         let dict = {};
         currentReportData.forEach((d) => {
-          let nm = (d.metode_tiket || 'OFFLINE KIOSK').toUpperCase();
+          let isScanned = d.metode_tiket === 'qrcode' || d.metode_tiket === 'scan';
+          let nm = isScanned ? 'ONLINE APP / QR CODE' : 'OFFLINE KIOSK / MENDATANGI';
+
           if (!dict[nm]) dict[nm] = { nm, t: 0, tw: 0, cw: 0 };
           dict[nm].t++;
           if (d.waktu_panggil) {
