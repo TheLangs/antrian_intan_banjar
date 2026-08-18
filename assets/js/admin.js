@@ -543,12 +543,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let barHtml = `
           <div class="relative flex flex-col justify-end w-full h-full group pb-1">
-            <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[11px] font-bold px-3 py-1.5 rounded-md shadow-lg opacity-0 group-hover:opacity-100 mb-2 transition-opacity pointer-events-none z-20 whitespace-nowrap">
-              ${d.msk} Tiket
-              <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
-            </div>
-            <div class="w-full bg-gradient-to-t ${pct > 0 ? 'from-accent to-blue-400' : 'from-slate-100 to-slate-50'} shadow-sm hover:brightness-110 hover:shadow-md transition-all duration-300 rounded-t-md relative z-10" style="height: ${pct}%; min-height: ${pct > 0 ? '6px' : '0'}">
-              ${pct > 0 ? '<div class="absolute inset-x-0 top-0 h-1.5 bg-white/30 rounded-t-lg"></div>' : ''}
+            <div class="w-full bg-gradient-to-t ${pct > 0 ? 'from-accent to-blue-400' : 'from-slate-100 to-slate-50'} shadow-sm hover:brightness-110 hover:shadow-md transition-all duration-300 rounded-t-lg relative z-10" style="height: ${pct}%; min-height: ${pct > 0 ? '6px' : '0'}">
+              <div class="absolute -top-9 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[11px] font-bold px-3 py-1.5 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 whitespace-nowrap">
+                ${d.msk} Tiket
+                <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
+              </div>
+              ${pct > 0 ? '<div class="absolute inset-x-0 top-0 h-1 bg-white/30 rounded-t-lg"></div>' : ''}
             </div>
           </div>
        `;
