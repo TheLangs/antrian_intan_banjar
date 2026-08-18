@@ -262,6 +262,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update KPIs with safe checks
     if (kpiTotal) kpiTotal.textContent = cntTotal;
     if (kpiSelesai) kpiSelesai.textContent = cntSelesai;
+    const kpiTerlewat = document.getElementById('ov-terlewat');
+    if (kpiTerlewat) kpiTerlewat.textContent = cntTerlewat;
 
     if (kpiAvgWait) {
       if (waitCount > 0) {
