@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Initial Load & Live Background Polling (Every 20 Seconds)
+  fetchSettings();
   fetchData();
   setInterval(fetchDataSilent, 20000);
 
@@ -187,6 +188,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (kpiSuccessPct) kpiSuccessPct.textContent = '0%';
 
       if (typeof renderLoketCards === 'function') renderLoketCards('ov-loket-cards', data, loketData);
+      if (typeof renderSessionManager === 'function') renderSessionManager(loketData);
+      if (typeof renderAuditTrail === 'function') renderAuditTrail(data);
       if (typeof renderRecentEvents === 'function') renderRecentEvents('ov-recent-events', data);
       if (typeof renderKasirAnalytics === 'function') renderKasirAnalytics(data);
       if (typeof renderTrafficAnalytics === 'function') renderTrafficAnalytics(data);
@@ -278,6 +281,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (kpiSuccessPct) kpiSuccessPct.textContent = Math.round((cntSelesai / (cntTotal || 1)) * 100) + '%';
 
     if (typeof renderLoketCards === 'function') renderLoketCards('ov-loket-cards', data, loketData);
+    if (typeof renderSessionManager === 'function') renderSessionManager(loketData);
+    if (typeof renderAuditTrail === 'function') renderAuditTrail(data);
     if (typeof renderRecentEvents === 'function') renderRecentEvents('ov-recent-events', data);
 
     // Call new analytics renderers
@@ -718,6 +723,76 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  window.forceReleaseSession = async function (id_loket) {
+    if (!confirm(`Tindakan ini akan meng-kick sesi Kasir di Loket ${id_loket} secara paksa! Lanjutkan?`)) return;
+    try {
+      const { error } = await supabase.from('loket').update({ session_token: null, login_time: null }).eq('id_loket', id_loket);
+      if (error) throw error;
+      alert(`Sesi Loket ${id_loket} berhasil dilepas secara paksa.`);
+      fetchDataSilent();
+    } catch (err) {
+      alert('Gagal melepas sesi: ' + err.message);
+    }
+  };
+
+  function renderSessionManager(loketData = []) {
+    const container = document.getElementById('sm-grid-container');
+    if (!container) return;
+
+    if (loketData.length === 0) {
+      container.innerHTML = `<div class="col-span-full p-8 text-center text-slate-500 font-semibold bg-white rounded-3xl border border-slate-100 shadow-sm">Belum ada data Loket di Tabel.</div>`;
+      return;
+    }
+
+    let html = '';
+    loketData.forEach((l) => {
+      const isOnline = !!l.session_token;
+
+      html += `
+        <div class="bg-white rounded-3xl border ${isOnline ? 'border-amber-200 shadow-md ring-1 ring-amber-100' : 'border-slate-100 shadow-sm'} p-6 flex flex-col justify-between transition-all">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-black text-slate-800">${l.nama_loket || 'LOKET ' + l.id_loket}</h3>
+              ${
+                isOnline
+                  ? `<span class="bg-amber-100 text-amber-700 font-bold px-3 py-1 rounded-full text-xs flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> TERKUNCI / AKTIF</span>`
+                  : `<span class="bg-slate-100 text-slate-500 font-bold px-3 py-1 rounded-full text-xs">KOSONG</span>`
+              }
+            </div>
+            
+            <div class="space-y-3 mb-6">
+              <div class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-slate-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                <div class="text-sm">
+                  <p class="font-bold text-slate-700">Client Token (Web Lock)</p>
+                  <p class="text-xs text-slate-500 font-mono mt-0.5 break-all">${l.session_token || 'Tidak Ada Sesi Aktif'}</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-slate-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div class="text-sm">
+                  <p class="font-bold text-slate-700">Login Terakhir</p>
+                  <p class="text-xs text-slate-500 mt-0.5">${l.login_time ? new Date(l.login_time).toLocaleString('id-ID') : 'Belum Pernah'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <button 
+            onclick="forceReleaseSession(${l.id_loket})"
+            class="${isOnline ? 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200' : 'bg-slate-50 text-slate-400 cursor-not-allowed border border-transparent'} 
+                   w-full font-bold py-2.5 rounded-xl text-sm transition-all focus:outline-none flex items-center justify-center gap-2"
+            ${!isOnline ? 'disabled' : ''}>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            FORCE RELEASE SESSION
+          </button>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  }
+
   function renderRecentEvents(containerId, data) {
     const c = document.getElementById(containerId);
     if (!c) return;
@@ -959,6 +1034,80 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
          </div>
        `;
+    });
+  }
+
+  // --- APP SETTINGS LOGIC ---
+  async function fetchSettings() {
+    try {
+      const { data, error } = await supabase.from('app_settings').select('*');
+      if (error) throw error;
+      if (data && data.length > 0) {
+        data.forEach((setting) => {
+          if (setting.key_name === 'marquee_text') {
+            const marqInput = document.getElementById('input-marq');
+            if (marqInput) marqInput.value = setting.val_text;
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error fetching settings:', e);
+    }
+
+    // Fetch Admins for Settings Table
+    fetchAdmins();
+  }
+
+  async function fetchAdmins() {
+    try {
+      const { data, error } = await supabase.from('admin').select('id_admin, username, nama_lengkap');
+      if (error) throw error;
+
+      const tbody = document.getElementById('ad-tbody');
+      if (tbody && data) {
+        let h = '';
+        data.forEach((adm) => {
+          const initial = adm.nama_lengkap ? adm.nama_lengkap.charAt(0).toUpperCase() : 'A';
+          h += `
+            <tr class="hover:bg-blue-50/30 transition-colors">
+              <td class="px-5 py-4 font-bold text-slate-800 flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-[#0B5C9E]/10 text-[#0B5C9E] font-bold flex items-center justify-center text-xs">${initial}</div>
+                ${adm.nama_lengkap}
+              </td>
+              <td class="px-5 py-4 text-xs text-slate-500">${adm.username}</td>
+              <td class="px-5 py-4 text-right">
+                <button class="text-slate-400 cursor-not-allowed font-bold px-2 py-1 mx-1 rounded text-xs transition-colors" disabled>Restricted</button>
+              </td>
+            </tr>
+          `;
+        });
+        tbody.innerHTML = h;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  const btnSaveMarq = document.getElementById('btn-save-marq');
+  if (btnSaveMarq) {
+    btnSaveMarq.addEventListener('click', async () => {
+      const newVal = document.getElementById('input-marq').value.trim();
+      if (!newVal) return alert('Teks pengumuman tidak boleh kosong!');
+
+      const prevText = btnSaveMarq.textContent;
+      btnSaveMarq.textContent = 'Menyimpan...';
+      btnSaveMarq.disabled = true;
+
+      try {
+        const { error } = await supabase.from('app_settings').update({ val_text: newVal }).eq('key_name', 'marquee_text');
+        if (error) throw error;
+        alert('Teks Pengumuman TV berhasil diperbarui!');
+      } catch (e) {
+        alert('Gagal menyimpan teks: ' + e.message);
+      } finally {
+        btnSaveMarq.textContent = prevText;
+        btnSaveMarq.disabled = false;
+      }
     });
   }
 });

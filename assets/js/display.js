@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial DOM and Fetch
   initDisplayGrid();
+  fetchSettings();
 
   // Realtime Listener
   setupRealtime();
@@ -130,6 +131,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (e) {
       console.error('Fetch Initial Err:', e);
+    }
+  }
+
+  async function fetchSettings() {
+    try {
+      const { data, error } = await supabase.from('app_settings').select('*');
+      if (error) throw error;
+      if (data && data.length > 0) {
+        data.forEach((setting) => {
+          if (setting.key_name === 'marquee_text') {
+            const marqUI = document.getElementById('tv-marquee');
+            if (marqUI) marqUI.textContent = setting.val_text;
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Fetch Settings Err:', e);
     }
   }
 
@@ -271,6 +289,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Trigger sound & visual
             playCallingAnnouncement(newData.id_loket, noLengkap);
+          }
+        },
+      )
+      .subscribe();
+
+    // Listen to App Settings Updates
+    supabase
+      .channel('public-settings')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'app_settings',
+        },
+        (payload) => {
+          if (payload.new.key_name === 'marquee_text') {
+            const marqUI = document.getElementById('tv-marquee');
+            if (marqUI) marqUI.textContent = payload.new.val_text;
           }
         },
       )
