@@ -98,8 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
       let endD = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0] + 'T23:59:59.999Z';
 
       if (inpStart && inpStart.value) {
-        startD = new Date(inpStart.value + 'T00:00:00').toISOString();
-        endD = new Date(inpStart.value + 'T23:59:59').toISOString();
+        startD = inpStart.value + 'T00:00:00.000Z';
+        endD = inpStart.value + 'T23:59:59.999Z';
       }
 
       const [resAntrian, resLoket] = await Promise.all([
