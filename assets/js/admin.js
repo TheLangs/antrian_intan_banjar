@@ -30,15 +30,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentReportData = [];
 
-  // Set default dates (Today)
+  // Set default dates (Today) for ALL date pickers across different tabs
   const today = new Date();
-  // Offset local timezone for ISO format
   const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-  if (inpStart) inpStart.value = localToday;
-  if (inpEnd) inpEnd.value = localToday;
+  document.querySelectorAll('input[type="date"]').forEach((inp) => {
+    inp.value = localToday;
+    inp.addEventListener('change', fetchData); // Auto-fetch when any date picker changes
+  });
 
   // Events
   if (btnFilter) btnFilter.addEventListener('click', fetchData);
+
+  // Bind all export buttons that have PDF/CSV exports
+  document.querySelectorAll('[data-export]').forEach((btn) => {
+    if (btn.getAttribute('data-export') === 'history') {
+      // Optionally bind simple CSV export here if needed, or point to PDF
+    } else {
+      btn.addEventListener('click', generatePDF);
+    }
+  });
+
   if (btnLogout)
     btnLogout.addEventListener('click', () => {
       localStorage.clear();
@@ -219,8 +230,42 @@ document.addEventListener('DOMContentLoaded', () => {
       doc.setTextColor(50, 50, 50);
       doc.text('Laporan Eksekutif Performa Sistem Analitik Antrean.', 14, 28);
 
+      const realStart = document.getElementById('ov-date')?.value || new Date().toISOString().split('T')[0];
+      const realEnd = document.getElementById('ov-date')?.value || new Date().toISOString().split('T')[0];
       doc.setFontSize(10);
-      doc.text(`Periode: ${new Date(inpStart.value).toLocaleDateString('id-ID')} s/d ${new Date(inpEnd.value).toLocaleDateString('id-ID')}`, 14, 34);
+      doc.text(`Periode Cetak: ${new Date().toLocaleDateString('id-ID')} | Tanggal Data: ${new Date(realStart).toLocaleDateString('id-ID')} s/d ${new Date(realEnd).toLocaleDateString('id-ID')}`, 14, 34);
+
+      // --- Executive KPI Summary Section ---
+      doc.setFillColor(241, 245, 249); // slate-100 banner
+      doc.rect(14, 40, 269, 20, 'F');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(30, 41, 59);
+
+      // Calculate active metrics from currentReportData
+      let sSelesai = 0,
+        sTerlewat = 0,
+        sSumW = 0,
+        sCntW = 0;
+      currentReportData.forEach((d) => {
+        if (d.status === 'selesai') sSelesai++;
+        if (d.status === 'terlewat') sTerlewat++;
+        if (d.waktu_panggil) {
+          let w = (new Date(d.waktu_panggil) - new Date(d.waktu_ambil)) / 1000;
+          if (w > 0) {
+            sSumW += w;
+            sCntW++;
+          }
+        }
+      });
+      let sWait = sCntW > 0 ? formatSec(sSumW / sCntW) : '0m 0s';
+      let sTtl = currentReportData.length;
+
+      doc.text(`TOTAL TIKET: ${sTtl}`, 20, 52);
+      doc.text(`SELESAI: ${sSelesai} (${sTtl > 0 ? Math.round((sSelesai / sTtl) * 100) : 0}%)`, 80, 52);
+      doc.text(`TERLEWAT: ${sTerlewat}`, 150, 52);
+      doc.text(`RATA-RATA WAKTU TUNGGU: ${sWait}`, 210, 52);
 
       // Prep Table Data
       const tableColumn = ['ID', 'Nomor', 'Platform', 'Status', 'Loket', 'Petugas', 'Pukul Ambil', 'Pukul Panggil', 'Pukul Selesai', 'Wt. Tunggu', 'Wt. Layan'];
@@ -262,22 +307,17 @@ document.addEventListener('DOMContentLoaded', () => {
       doc.autoTable({
         head: [tableColumn],
         body: tableRows,
-        startY: 40,
+        startY: 65, // Start below the KPI header box
         theme: 'striped',
         headStyles: { fillColor: [11, 92, 158] },
         styles: { fontSize: 8 },
+        columnStyles: {
+          0: { halign: 'center', cellWidth: 15 },
+          1: { fontStyle: 'bold', halign: 'center', cellWidth: 18 },
+          2: { halign: 'center' },
+          3: { halign: 'center' },
+        },
       });
-
-      // Summary at the bottom
-      const finalY = doc.lastAutoTable.finalY || 40;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Total Ringkasan:', 14, finalY + 12);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`- Seluruh Antrean: ${kpiTotal.textContent}`, 14, finalY + 18);
-      doc.text(`- Sukses Dilayani: ${kpiSelesai.textContent}`, 14, finalY + 24);
-      doc.text(`- Terlewat/Batal: ${kpiTerlewat.textContent}`, 14, finalY + 30);
-      doc.text(`- Rata-rata Menunggu: ${kpiAvgWait.textContent}`, 14, finalY + 36);
 
       // Doc Stamp
       doc.setFontSize(8);
@@ -285,10 +325,11 @@ document.addEventListener('DOMContentLoaded', () => {
       doc.text(`Digenerate oleh sistem pada: ${new Date().toLocaleString('id-ID')}`, 14, doc.internal.pageSize.getHeight() - 10);
 
       // Save
-      doc.save(`Laporan_Antrean_Intan_Banjar_${inpStart.value}.pdf`);
+      doc.save(`Laporan_Antrean_Intan_Banjar_${new Date().toISOString().split('T')[0]}.pdf`);
     } catch (e) {
       console.error(e);
-      alert('Gagal merender PDF');
+      alert('Gagal merender PDF: ' + e.message);
+      
     } finally {
       // Reset Btn
       btnExport.disabled = false;
