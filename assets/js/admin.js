@@ -404,15 +404,32 @@ document.addEventListener('DOMContentLoaded', () => {
           3: { halign: 'center' },
         };
       }
+
+      // Trigger AutoTable Plugin
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 65, // Start below the KPI header box
+        theme: 'striped',
+        headStyles: { fillColor: [11, 92, 158] },
+        styles: { fontSize: 8 },
+        columnStyles: cStyles,
+      });
+
+      // Doc Stamp
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Digenerate oleh sistem pada: ${new Date().toLocaleString('id-ID')}`, 14, doc.internal.pageSize.getHeight() - 10);
+
+      // Save
+      doc.save(`Laporan_${exportType.toUpperCase()}_Intan_Banjar_${new Date().toISOString().split('T')[0]}.pdf`);
     } catch (e) {
       console.error(e);
       alert('Gagal merender PDF: ' + e.message);
     } finally {
       // Reset Btn
-      btnExport.disabled = false;
-      btnExport.innerHTML = `
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                Export PDF`;
+      clickedBtn.disabled = false;
+      clickedBtn.innerHTML = originalHtml;
     }
   }
 
