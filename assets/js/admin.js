@@ -80,8 +80,63 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Initial Load
+  // Initial Load & Live Background Polling (Every 20 Seconds)
   fetchData();
+  setInterval(fetchDataSilent, 20000);
+
+  function checkSessionAuth() {
+    // Failsafe in case localStorage was cleared mid-session
+    const adminId = localStorage.getItem('ib_admin_id');
+    if (!adminId) {
+      window.location.href = 'admin_login.html';
+      return false;
+    }
+    return true;
+  }
+
+  function showOfflineBadge() {
+    let badge = document.getElementById('offline-badge');
+    if (!badge) {
+      badge = document.createElement('div');
+      badge.id = 'offline-badge';
+      badge.className = 'fixed top-4 right-4 bg-red-100 text-red-600 px-4 py-2 rounded-full shadow-lg font-bold text-sm z-[9999] flex items-center gap-2 transition-all';
+      badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> Offline Mode';
+      document.body.appendChild(badge);
+    }
+  }
+
+  function hideOfflineBadge() {
+    const badge = document.getElementById('offline-badge');
+    if (badge) badge.remove();
+  }
+
+  async function fetchDataSilent() {
+    if (!checkSessionAuth()) return;
+    try {
+      const today = new Date();
+      let startD = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0] + 'T00:00:00.000Z';
+      let endD = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0] + 'T23:59:59.999Z';
+
+      if (inpStart && inpStart.value) {
+        startD = inpStart.value + 'T00:00:00.000Z';
+        endD = inpStart.value + 'T23:59:59.999Z';
+      }
+
+      const [resAntrian, resLoket] = await Promise.all([
+        supabase.from('antrian').select('*, loket(nama_loket)').gte('waktu_ambil', startD).lte('waktu_ambil', endD).order('id_antrian', { ascending: true }),
+        supabase.from('loket').select('*'),
+      ]);
+
+      if (resAntrian.error) throw resAntrian.error;
+      hideOfflineBadge();
+
+      currentReportData = resAntrian.data || [];
+      processAndRender(currentReportData, resLoket.data || []);
+    } catch (err) {
+      console.warn('Silent Live Polling failed:', err.message);
+      showOfflineBadge();
+    }
+  }
 
   async function fetchData() {
     if (loader) loader.classList.remove('hidden');
@@ -108,12 +163,13 @@ document.addEventListener('DOMContentLoaded', () => {
       ]);
 
       if (resAntrian.error) throw resAntrian.error;
+      hideOfflineBadge();
 
       currentReportData = resAntrian.data || [];
       processAndRender(currentReportData, resLoket.data || []);
     } catch (err) {
-      console.error(err);
-      alert('Gagal memuat data laporan: ' + err.message);
+      console.error('Fetch Data Error:', err);
+      showOfflineBadge();
     } finally {
       if (loader) loader.classList.add('hidden');
     }
@@ -147,6 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tableBody) tableBody.innerHTML = '';
     if (tableEmpty) tableEmpty.classList.add('hidden');
 
+    let renderIdx = 0;
     data.forEach((item) => {
       if (item.status === 'selesai') cntSelesai++;
       if (item.status === 'terlewat' || item.status === 'batal') cntTerlewat++;
@@ -169,29 +226,37 @@ document.addEventListener('DOMContentLoaded', () => {
         if (s > 0) svcTimeStr = formatSec(s);
       }
 
-      // Render Row
-      const tr = document.createElement('tr');
-      tr.className = 'hover:bg-slate-50 transition-colors';
+      if (renderIdx < 100) {
+        // Render Row
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition-colors';
 
-      let statusBadge = '';
-      if (item.status === 'selesai') statusBadge = '<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">Selesai</span>';
-      else if (item.status === 'terlewat') statusBadge = '<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Terlewat</span>';
-      else if (item.status === 'dipanggil') statusBadge = '<span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">Dipanggil</span>';
-      else statusBadge = '<span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">Menunggu</span>';
+        let statusBadge = '';
+        if (item.status === 'selesai') statusBadge = '<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">Selesai</span>';
+        else if (item.status === 'terlewat') statusBadge = '<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Terlewat</span>';
+        else if (item.status === 'dipanggil') statusBadge = '<span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">Dipanggil</span>';
+        else statusBadge = '<span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">Menunggu</span>';
 
-      const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
+        const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
 
-      tr.innerHTML = `
-                <td class="px-6 py-4 font-bold text-slate-800">${noLengkap}</td>
-                <td class="px-6 py-4 uppercase text-xs font-bold text-slate-500">${item.metode_tiket}</td>
-                <td class="px-6 py-4">${item.loket?.nama_loket || '-'}</td>
-                <td class="px-6 py-4">${item.nama_petugas || '-'}</td>
-                <td class="px-6 py-4 text-xs font-mono text-slate-500">${new Date(item.waktu_ambil).toLocaleTimeString('id-ID')}</td>
-                <td class="px-6 py-4 text-amber-600">${waitTimeStr}</td>
-                <td class="px-6 py-4 text-emerald-600">${svcTimeStr}</td>
-                <td class="px-6 py-4">${statusBadge}</td>
-            `;
-      if (tableBody) tableBody.appendChild(tr);
+        tr.innerHTML = `
+                  <td class="px-6 py-4 font-bold text-slate-800">${noLengkap}</td>
+                  <td class="px-6 py-4 uppercase text-xs font-bold text-slate-500">${item.metode_tiket}</td>
+                  <td class="px-6 py-4">${item.loket?.nama_loket || '-'}</td>
+                  <td class="px-6 py-4">${item.nama_petugas || '-'}</td>
+                  <td class="px-6 py-4 text-xs font-mono text-slate-500">${new Date(item.waktu_ambil).toLocaleTimeString('id-ID')}</td>
+                  <td class="px-6 py-4 text-amber-600">${waitTimeStr}</td>
+                  <td class="px-6 py-4 text-emerald-600">${svcTimeStr}</td>
+                  <td class="px-6 py-4">${statusBadge}</td>
+              `;
+        if (tableBody) tableBody.appendChild(tr);
+      } else if (renderIdx === 100) {
+        // Render Trim Warning
+        const warningTr = document.createElement('tr');
+        warningTr.innerHTML = `<td colspan="8" class="text-center py-4 text-xs font-bold text-slate-400 bg-slate-50">Tampilan GUI dibatasi 100 baris pertama untuk performa. Unduh CSV/PDF untuk menganalisa data penuh.</td>`;
+        if (tableBody) tableBody.appendChild(warningTr);
+      }
+      renderIdx++;
     });
 
     // Update KPIs with safe checks
