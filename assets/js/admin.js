@@ -121,12 +121,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function processAndRender(data, loketData = []) {
     if (data.length === 0) {
+      if (tableBody) tableBody.innerHTML = '';
       if (tableEmpty) tableEmpty.classList.remove('hidden');
       if (kpiTotal) kpiTotal.textContent = '0';
       if (kpiSelesai) kpiSelesai.textContent = '0';
       if (kpiAvgWait) kpiAvgWait.textContent = '0m 0s';
       if (kpiAvgSvc) kpiAvgSvc.textContent = '0m 0s';
+      const kpiSuccessPct = document.getElementById('ov-success-pct');
+      if (kpiSuccessPct) kpiSuccessPct.textContent = '0%';
+
       if (typeof renderLoketCards === 'function') renderLoketCards('ov-loket-cards', data, loketData);
+      if (typeof renderRecentEvents === 'function') renderRecentEvents('ov-recent-events', data);
+      if (typeof renderKasirAnalytics === 'function') renderKasirAnalytics(data);
+      if (typeof renderTrafficAnalytics === 'function') renderTrafficAnalytics(data);
+      if (typeof renderDigitalAnalytics === 'function') renderDigitalAnalytics(data);
       return;
     }
 
