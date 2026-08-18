@@ -128,6 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let totalWaitTimeSec = 0;
     let waitCount = 0;
 
+    if (tableBody) tableBody.innerHTML = '';
+    if (tableEmpty) tableEmpty.classList.add('hidden');
+
     data.forEach((item) => {
       if (item.status === 'selesai') cntSelesai++;
       if (item.status === 'terlewat' || item.status === 'batal') cntTerlewat++;
@@ -217,7 +220,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Check if it's the history CSV export
     if (exportType === 'history') {
-      alert('Fitur CSV sedang dalam optimasi. Gunakan ekspor PDF pada Ringkasan untuk data lengkap.');
+      try {
+        let scsv = 'ID,Nomor,Platform,Status,Loket,Petugas,Ambil,Panggil,Selesai\n';
+        currentReportData.forEach((item) => {
+          const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
+          scsv += `"${item.id_antrian}","${noLengkap}","${item.metode_tiket || ''}","${item.status || ''}","${item.loket?.nama_loket || ''}","${item.nama_petugas || ''}","${item.waktu_ambil || ''}","${item.waktu_panggil || ''}","${item.waktu_selesai || ''}"\n`;
+        });
+        const blob = new Blob([scsv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `Antrian_Data_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (err) {
+        alert('Gagal mengekspor CSV: ' + err.message);
+      }
       return;
     }
 
