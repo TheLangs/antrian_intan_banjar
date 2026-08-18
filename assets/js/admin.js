@@ -440,11 +440,87 @@ document.addEventListener('DOMContentLoaded', () => {
         };
       }
 
+      // === NATIVE PDF VECTOR CHARTS ===
+      let yOffset = 65; // default table start Y
+
+      if (exportType === 'traffic' && tableRows.length > 0) {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Visualisasi Kepadatan Antrean per Jam', 14, 68);
+
+        let chartX = 14;
+        let chartY = 75;
+        let chartW = 250;
+        let chartH = 40;
+        let trafficValues = tableRows.map((r) => r[1]);
+        let maxV = Math.max(...trafficValues, 1);
+
+        // Data Axes
+        doc.setDrawColor(200, 200, 200);
+        doc.line(chartX, chartY + chartH, chartX + chartW, chartY + chartH); // X Axis
+
+        let barSpacing = 4;
+        let barW = chartW / trafficValues.length - barSpacing;
+
+        doc.setFont('helvetica', 'normal');
+        tableRows.forEach((r, i) => {
+          let h = (r[1] / maxV) * chartH;
+          let bx = chartX + i * (barW + barSpacing);
+          let by = chartY + chartH - h;
+
+          doc.setFillColor(11, 92, 158); // Brand Primary
+          if (h > 0) doc.rect(bx, by, barW, h, 'F');
+
+          doc.setFontSize(7);
+          doc.setTextColor(100);
+          // Value Above Bar
+          if (r[1] > 0) doc.text(String(r[1]), bx + barW / 2 - 1, by - 2, { align: 'center' });
+          // Label Below
+          let hourLabel = String(r[0]).substring(0, 5); // '09:00'
+          doc.text(hourLabel, bx + barW / 2 - 1, chartY + chartH + 4, { align: 'center' });
+        });
+
+        yOffset = 135; // Push table down
+      } else if (exportType === 'digital' && tableRows.length > 0) {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Komparasi Proporsi Saluran Pengambilan Tiket', 14, 68);
+
+        let chartY = 78;
+        let maxRowW = 150;
+        doc.setFont('helvetica', 'normal');
+
+        tableRows.forEach((r, i) => {
+          let val = r[1];
+          let w = sTtl > 0 ? (val / sTtl) * maxRowW : 0;
+          let cy = chartY + i * 14;
+
+          doc.setFontSize(8);
+          doc.setTextColor(30);
+          doc.text(r[0], 14, cy + 5);
+
+          // Color coding based on platform
+          if (r[0].includes('ONLINE API') || r[0].includes('APP'))
+            doc.setFillColor(34, 197, 94); // Green
+          else doc.setFillColor(245, 158, 11); // Amber
+
+          doc.rect(50, cy, w, 8, 'F');
+
+          doc.setFont('helvetica', 'bold');
+          doc.text(`${val} Tiket (${r[2]})`, 50 + w + 3, cy + 6);
+          doc.setFont('helvetica', 'normal');
+        });
+
+        yOffset = chartY + tableRows.length * 14 + 10;
+      } else if (exportType === 'kasir' && tableRows.length > 0) {
+        yOffset = 65; // keep high up for tabular density
+      }
+
       // Trigger AutoTable Plugin
       doc.autoTable({
         head: [tableColumn],
         body: tableRows,
-        startY: 65, // Start below the KPI header box
+        startY: yOffset,
         theme: 'striped',
         headStyles: { fillColor: [11, 92, 158] },
         styles: { fontSize: 8 },
