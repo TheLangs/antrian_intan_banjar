@@ -49,13 +49,33 @@ document.addEventListener('DOMContentLoaded', () => {
   // Events
   if (btnFilter) btnFilter.addEventListener('click', fetchData);
 
+  ['ks-search', 'ks-nama'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', () => {
+        if (typeof renderKasirAnalytics === 'function' && currentReportData) renderKasirAnalytics(currentReportData);
+      });
+      el.addEventListener('change', () => {
+        if (typeof renderKasirAnalytics === 'function' && currentReportData) renderKasirAnalytics(currentReportData);
+      });
+    }
+  });
+
+  ['hs-search', 'hs-status', 'hs-loket'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', () => {
+        if (currentReportData) processAndRender(currentReportData);
+      });
+      el.addEventListener('change', () => {
+        if (currentReportData) processAndRender(currentReportData);
+      });
+    }
+  });
+
   // Bind all export buttons that have PDF/CSV exports
   document.querySelectorAll('[data-export]').forEach((btn) => {
-    if (btn.getAttribute('data-export') === 'history') {
-      // Optionally bind simple CSV export here if needed, or point to PDF
-    } else {
-      btn.addEventListener('click', generatePDF);
-    }
+    btn.addEventListener('click', generatePDF);
   });
 
   if (btnLogout)
@@ -115,12 +135,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!checkSessionAuth()) return;
     try {
       const today = new Date();
-      let startD = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0] + 'T00:00:00.000Z';
-      let endD = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0] + 'T23:59:59.999Z';
+      let startD = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0).toISOString();
+      let endD = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999).toISOString();
 
       if (inpStart && inpStart.value) {
-        startD = inpStart.value + 'T00:00:00.000Z';
-        endD = inpStart.value + 'T23:59:59.999Z';
+        const p = inpStart.value.split('-');
+        startD = new Date(p[0], p[1] - 1, p[2], 0, 0, 0).toISOString();
+        endD = new Date(p[0], p[1] - 1, p[2], 23, 59, 59, 999).toISOString();
       }
 
       const [resAntrian, resLoket] = await Promise.all([
@@ -150,12 +171,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const today = new Date();
-      let startD = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0] + 'T00:00:00.000Z';
-      let endD = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0] + 'T23:59:59.999Z';
+      let startD = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0).toISOString();
+      let endD = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999).toISOString();
 
       if (inpStart && inpStart.value) {
-        startD = inpStart.value + 'T00:00:00.000Z';
-        endD = inpStart.value + 'T23:59:59.999Z';
+        const p = inpStart.value.split('-');
+        startD = new Date(p[0], p[1] - 1, p[2], 0, 0, 0).toISOString();
+        endD = new Date(p[0], p[1] - 1, p[2], 23, 59, 59, 999).toISOString();
       }
 
       const [resAntrian, resLoket] = await Promise.all([
@@ -176,7 +198,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function populateFilterDropdowns(data) {
+    const ksNama = document.getElementById('ks-nama');
+    if (ksNama) {
+      const curVal = ksNama.value;
+      const petugas = [...new Set(data.map((x) => x.nama_petugas).filter(Boolean))].sort();
+      ksNama.innerHTML = '<option value="ALL">Semua Kasir</option>' + petugas.map((p) => `<option value="${p}">${p}</option>`).join('');
+      ksNama.value = curVal || 'ALL';
+      if (ksNama.selectedIndex < 0) ksNama.value = 'ALL';
+    }
+    const hsLoket = document.getElementById('hs-loket');
+    if (hsLoket) {
+      const curVal = hsLoket.value;
+      const loket = [...new Set(data.map((x) => x.loket?.nama_loket).filter(Boolean))].sort();
+      hsLoket.innerHTML = '<option value="ALL">Semua Loket</option>' + loket.map((l) => `<option value="${l}">${l}</option>`).join('');
+      hsLoket.value = curVal || 'ALL';
+      if (hsLoket.selectedIndex < 0) hsLoket.value = 'ALL';
+    }
+  }
+
   function processAndRender(data, loketData = []) {
+    populateFilterDropdowns(data);
     if (data.length === 0) {
       if (tableBody) tableBody.innerHTML = '';
       if (tableEmpty) tableEmpty.classList.remove('hidden');
@@ -197,17 +239,43 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    let cntTotal = data.length;
+    // --- APPLY FILTERS ---
+    const searchTerm = (document.getElementById('hs-search')?.value || '').toLowerCase();
+    const statusTerm = (document.getElementById('hs-status')?.value || 'ALL').toLowerCase();
+    const loketTerm = document.getElementById('hs-loket')?.value || 'ALL';
+
+    let filteredData = data.filter((item) => {
+      let matchSearch = true;
+      if (searchTerm) {
+        const ticket = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`.toLowerCase();
+        const loket = (item.loket?.nama_loket || '').toLowerCase();
+        const petugas = (item.nama_petugas || '').toLowerCase();
+        matchSearch = ticket.includes(searchTerm) || loket.includes(searchTerm) || petugas.includes(searchTerm);
+      }
+      let matchStatus = true;
+      if (statusTerm !== 'all') {
+        matchStatus = (item.status || '').toLowerCase() === statusTerm;
+      }
+      let matchLoket = true;
+      if (loketTerm !== 'ALL') {
+        matchLoket = item.loket?.nama_loket === loketTerm;
+      }
+      return matchSearch && matchStatus && matchLoket;
+    });
+
+    let cntTotal = filteredData.length;
     let cntSelesai = 0;
     let cntTerlewat = 0;
     let totalWaitTimeSec = 0;
     let waitCount = 0;
+    let totalSvcTimeSec = 0;
+    let svcCount = 0;
 
     if (tableBody) tableBody.innerHTML = '';
     if (tableEmpty) tableEmpty.classList.add('hidden');
 
     let renderIdx = 0;
-    data.forEach((item) => {
+    filteredData.forEach((item) => {
       if (item.status === 'selesai') cntSelesai++;
       if (item.status === 'terlewat' || item.status === 'batal') cntTerlewat++;
 
@@ -224,9 +292,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      if (item.waktu_panggil && item.waktu_selesai) {
+      if (item.waktu_panggil && item.waktu_selesai && item.status === 'selesai') {
         const s = (new Date(item.waktu_selesai) - new Date(item.waktu_panggil)) / 1000;
-        if (s > 0) svcTimeStr = formatSec(s);
+        if (s > 0) {
+          totalSvcTimeSec += s;
+          svcCount++;
+          svcTimeStr = formatSec(s);
+        }
       }
 
       if (renderIdx < 100) {
@@ -242,21 +314,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
 
+        const loketPetugas = (item.loket?.nama_loket || 'LOKET ' + item.id_loket) + (item.nama_petugas ? ` / ${item.nama_petugas}` : '');
+        const timeMasuk = item.waktu_ambil ? new Date(item.waktu_ambil).toLocaleTimeString('id-ID') : '-';
+        const timePanggil = item.waktu_panggil ? new Date(item.waktu_panggil).toLocaleTimeString('id-ID') : '-';
+        const timeSelesai = item.waktu_selesai ? new Date(item.waktu_selesai).toLocaleTimeString('id-ID') : '-';
+
         tr.innerHTML = `
-                  <td class="px-6 py-4 font-bold text-slate-800">${noLengkap}</td>
-                  <td class="px-6 py-4 uppercase text-xs font-bold text-slate-500">${item.metode_tiket}</td>
-                  <td class="px-6 py-4">${item.loket?.nama_loket || '-'}</td>
-                  <td class="px-6 py-4">${item.nama_petugas || '-'}</td>
-                  <td class="px-6 py-4 text-xs font-mono text-slate-500">${new Date(item.waktu_ambil).toLocaleTimeString('id-ID')}</td>
-                  <td class="px-6 py-4 text-amber-600">${waitTimeStr}</td>
-                  <td class="px-6 py-4 text-emerald-600">${svcTimeStr}</td>
-                  <td class="px-6 py-4">${statusBadge}</td>
+                  <td class="px-5 py-4 font-bold text-slate-800">${noLengkap}</td>
+                  <td class="px-5 py-4 uppercase text-xs font-bold text-slate-500">${item.metode_tiket}</td>
+                  <td class="px-5 py-4 text-xs font-semibold text-slate-600">${loketPetugas}</td>
+                  <td class="px-5 py-4 text-xs font-mono text-slate-500">${timeMasuk}</td>
+                  <td class="px-5 py-4 text-xs font-mono text-slate-500">${timePanggil}</td>
+                  <td class="px-5 py-4 text-xs font-mono text-slate-500">${timeSelesai}</td>
+                  <td class="px-5 py-4 text-amber-600 text-xs font-mono">${waitTimeStr}</td>
+                  <td class="px-5 py-4 text-emerald-600 text-xs font-mono">${svcTimeStr}</td>
+                  <td class="px-5 py-4 text-right">${statusBadge}</td>
               `;
         if (tableBody) tableBody.appendChild(tr);
       } else if (renderIdx === 100) {
         // Render Trim Warning
         const warningTr = document.createElement('tr');
-        warningTr.innerHTML = `<td colspan="8" class="text-center py-4 text-xs font-bold text-slate-400 bg-slate-50">Tampilan GUI dibatasi 100 baris pertama untuk performa. Unduh CSV/PDF untuk menganalisa data penuh.</td>`;
+        warningTr.innerHTML = `<td colspan="9" class="text-center py-4 text-xs font-bold text-slate-400 bg-slate-50">Tampilan GUI dibatasi 100 baris pertama untuk performa. Unduh CSV/PDF untuk menganalisa data penuh.</td>`;
         if (tableBody) tableBody.appendChild(warningTr);
       }
       renderIdx++;
@@ -273,6 +351,14 @@ document.addEventListener('DOMContentLoaded', () => {
         kpiAvgWait.textContent = formatSec(totalWaitTimeSec / waitCount);
       } else {
         kpiAvgWait.textContent = '0m 0s';
+      }
+    }
+
+    if (kpiAvgSvc) {
+      if (svcCount > 0) {
+        kpiAvgSvc.textContent = formatSec(totalSvcTimeSec / svcCount);
+      } else {
+        kpiAvgSvc.textContent = '0m 0s';
       }
     }
 
@@ -726,7 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.forceReleaseSession = async function (id_loket) {
     if (!confirm(`Tindakan ini akan meng-kick sesi Kasir di Loket ${id_loket} secara paksa! Lanjutkan?`)) return;
     try {
-      const { error } = await supabase.from('loket').update({ session_token: null, login_time: null }).eq('id_loket', id_loket);
+      const { error } = await supabase.from('loket').update({ session_token: null, last_seen: null }).eq('id_loket', id_loket);
       if (error) throw error;
       alert(`Sesi Loket ${id_loket} berhasil dilepas secara paksa.`);
       fetchDataSilent();
@@ -745,10 +831,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let html = '';
-    loketData.forEach((l) => {
-      const isOnline = !!l.session_token;
+    [...loketData]
+      .sort((a, b) => a.id_loket - b.id_loket)
+      .forEach((l) => {
+        const isOnline = !!l.session_token;
 
-      html += `
+        html += `
         <div class="bg-white rounded-3xl border ${isOnline ? 'border-amber-200 shadow-md ring-1 ring-amber-100' : 'border-slate-100 shadow-sm'} p-6 flex flex-col justify-between transition-all">
           <div>
             <div class="flex items-center justify-between mb-4">
@@ -788,7 +876,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </button>
         </div>
       `;
-    });
+      });
 
     container.innerHTML = html;
   }
@@ -830,10 +918,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const emptyMsg = document.getElementById('ks-empty');
     if (!tbody || !emptyMsg) return;
 
+    // --- APPLY FILTERS ---
+    const searchTerm = (document.getElementById('ks-search')?.value || '').toLowerCase();
+    const namaTerm = document.getElementById('ks-nama')?.value || 'ALL';
+
+    let filteredData = data.filter((x) => {
+      let matchName = true;
+      if (namaTerm !== 'ALL') {
+        matchName = x.nama_petugas === namaTerm;
+      }
+      let matchSearch = true;
+      if (searchTerm) {
+        matchSearch = (x.nama_petugas || '').toLowerCase().includes(searchTerm) || (x.loket?.nama_loket || '').toLowerCase().includes(searchTerm);
+      }
+      return matchName && matchSearch;
+    });
+
     tbody.innerHTML = '';
     let ksMap = {};
 
-    data.forEach((x) => {
+    filteredData.forEach((x) => {
       if (!x.nama_petugas) return;
       let key = x.nama_petugas + '_' + (x.loket?.nama_loket || 'Unknown');
       if (!ksMap[key]) {
@@ -892,6 +996,75 @@ document.addEventListener('DOMContentLoaded', () => {
             <td class="px-5 py-4 text-center text-slate-500 font-mono text-xs">${avgSvc}</td>
          </tr>
        `;
+    });
+  }
+
+  function renderAuditTrail(logs) {
+    const tbody = document.getElementById('audit-tbody');
+    if (!tbody) return;
+
+    // Flatten logs into events
+    let events = [];
+    logs.forEach((item) => {
+      const ticketStr = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
+      const actor = item.nama_petugas || 'Anonim (Loket ' + item.id_loket + ')';
+
+      if (item.waktu_panggil) {
+        events.push({
+          time: new Date(item.waktu_panggil),
+          ticket: ticketStr,
+          actor: actor,
+          action: 'Panggilan Antrean',
+          color: 'text-amber-600',
+          bg: 'bg-amber-100',
+        });
+      }
+      if (item.waktu_selesai && (item.status === 'selesai' || item.status === 'terlewat' || item.status === 'batal')) {
+        let label = 'Diselesaikan';
+        let actColor = 'text-emerald-700';
+        let actBg = 'bg-emerald-100';
+
+        if (item.status === 'terlewat') {
+          label = 'Ditandai Terlewat';
+          actColor = 'text-red-700';
+          actBg = 'bg-red-100';
+        } else if (item.status === 'batal') {
+          label = 'Dibatalkan';
+          actColor = 'text-slate-600';
+          actBg = 'bg-slate-200';
+        }
+
+        events.push({
+          time: new Date(item.waktu_selesai),
+          ticket: ticketStr,
+          actor: actor,
+          action: label,
+          color: actColor,
+          bg: actBg,
+        });
+      }
+    });
+
+    events.sort((a, b) => b.time - a.time);
+
+    tbody.innerHTML = '';
+    if (events.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" class="text-center py-10 text-slate-500">Belum ada aktivitas tercatat pada rentang waktu ini.</td></tr>`;
+      return;
+    }
+
+    events.slice(0, 100).forEach((ev) => {
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-slate-50 transition-colors';
+      tr.innerHTML = `
+        <td class="px-6 py-4 text-xs font-mono text-slate-500">${ev.time.toLocaleTimeString('id-ID')}</td>
+        <td class="px-6 py-4 font-bold text-slate-700">${ev.ticket}</td>
+        <td class="px-6 py-4 text-xs text-slate-600">${ev.actor}</td>
+        <td class="px-6 py-4">
+           <span class="${ev.bg} ${ev.color} px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wider uppercase">${ev.action}</span>
+        </td>
+      `;
+      tbody.appendChild(tr);
     });
   }
 
@@ -971,13 +1144,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let hrMap = {};
 
     data.forEach((x) => {
-      if (x.metode_tiket === 'qrcode' || x.metode_tiket === 'scan') cntQr++;
+      const mt = (x.metode_tiket || '').toLowerCase();
+      if (mt === 'qrcode' || mt === 'scan' || mt === 'qr') cntQr++;
       else cntCetak++; // physical button etc
 
       let h = new Date(x.waktu_ambil).getHours();
       if (!hrMap[h]) hrMap[h] = { cetak: 0, qr: 0 };
 
-      if (x.metode_tiket === 'qrcode' || x.metode_tiket === 'scan') hrMap[h].qr++;
+      if (mt === 'qrcode' || mt === 'scan' || mt === 'qr') hrMap[h].qr++;
       else hrMap[h].cetak++;
     });
 
