@@ -35,7 +35,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
   document.querySelectorAll('input[type="date"]').forEach((inp) => {
     inp.value = localToday;
-    inp.addEventListener('change', fetchData); // Auto-fetch when any date picker changes
+    inp.addEventListener('change', (e) => {
+      const v = e.target.value;
+      if (v) {
+        document.querySelectorAll('input[type="date"]').forEach((other) => {
+          if (other !== e.target) other.value = v;
+        });
+      }
+      fetchData();
+    });
   });
 
   // Events
