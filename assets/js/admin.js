@@ -1436,9 +1436,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnSaveMarq) {
     btnSaveMarq.addEventListener('click', async () => {
       const newVal = document.getElementById('input-marq').value.trim();
-      const vMode = document.getElementById('input-video-mode').value;
-      const vYt = document.getElementById('input-vid') ? document.getElementById('input-vid').value.trim() : '';
-      const vCust = document.getElementById('select-vid-storage') ? document.getElementById('select-vid-storage').value : '';
 
       if (!newVal) return alert('Teks pengumuman tidak boleh kosong!');
 
@@ -1447,8 +1444,31 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSaveMarq.disabled = true;
 
       try {
+        const { error } = await supabase.from('app_settings').update({ val_text: newVal }).eq('key_name', 'marquee_text');
+        if (error) throw error;
+        alert('Teks Berjalan berhasil diperbarui!');
+      } catch (e) {
+        alert('Gagal menyimpan teks: ' + e.message);
+      } finally {
+        btnSaveMarq.textContent = prevText;
+        btnSaveMarq.disabled = false;
+      }
+    });
+  }
+
+  const btnSaveVideo = document.getElementById('btn-save-video');
+  if (btnSaveVideo) {
+    btnSaveVideo.addEventListener('click', async () => {
+      const vMode = document.getElementById('input-video-mode').value;
+      const vYt = document.getElementById('input-vid') ? document.getElementById('input-vid').value.trim() : '';
+      const vCust = document.getElementById('select-vid-storage') ? document.getElementById('select-vid-storage').value : '';
+
+      const prevText = btnSaveVideo.textContent;
+      btnSaveVideo.textContent = 'Menyimpan...';
+      btnSaveVideo.disabled = true;
+
+      try {
         const promises = [
-          supabase.from('app_settings').update({ val_text: newVal }).eq('key_name', 'marquee_text'),
           supabase.from('app_settings').update({ val_text: vMode }).eq('key_name', 'video_mode'),
           supabase.from('app_settings').update({ val_text: vYt }).eq('key_name', 'video_url'),
           supabase.from('app_settings').update({ val_text: vCust }).eq('key_name', 'video_custom_url'),
@@ -1459,12 +1479,12 @@ document.addEventListener('DOMContentLoaded', () => {
           if (r.error) throw r.error;
         });
 
-        alert('Pengaturan Layar TV berhasil diperbarui!');
+        alert('Pengaturan Layar Video berhasil diperbarui!');
       } catch (e) {
-        alert('Gagal menyimpan pengaturan: ' + e.message);
+        alert('Gagal menyimpan pengaturan video: ' + e.message);
       } finally {
-        btnSaveMarq.textContent = prevText;
-        btnSaveMarq.disabled = false;
+        btnSaveVideo.textContent = prevText;
+        btnSaveVideo.disabled = false;
       }
     });
   }
