@@ -1444,7 +1444,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSaveMarq.disabled = true;
 
       try {
-        const { error } = await supabase.from('app_settings').update({ val_text: newVal }).eq('key_name', 'marquee_text');
+        const { error } = await supabase.from('app_settings').upsert({ key_name: 'marquee_text', val_text: newVal }, { onConflict: 'key_name' });
         if (error) throw error;
         alert('Teks Berjalan berhasil diperbarui!');
       } catch (e) {
@@ -1469,9 +1469,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         const promises = [
-          supabase.from('app_settings').update({ val_text: vMode }).eq('key_name', 'video_mode'),
-          supabase.from('app_settings').update({ val_text: vYt }).eq('key_name', 'video_url'),
-          supabase.from('app_settings').update({ val_text: vCust }).eq('key_name', 'video_custom_url'),
+          supabase.from('app_settings').upsert({ key_name: 'video_mode', val_text: vMode }, { onConflict: 'key_name' }),
+          supabase.from('app_settings').upsert({ key_name: 'video_url', val_text: vYt }, { onConflict: 'key_name' }),
+          supabase.from('app_settings').upsert({ key_name: 'video_custom_url', val_text: vCust }, { onConflict: 'key_name' }),
         ];
 
         const results = await Promise.all(promises);
