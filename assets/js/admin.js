@@ -146,7 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function fetchDataSilent() {
-    if (!checkSessionAuth()) return;
     const activeTab = document.querySelector('.nav-item.active')?.getAttribute('data-tab');
     if (activeTab !== 'overview' && activeTab !== 'session-manager' && activeTab !== 'display-control') return;
     try {
@@ -272,10 +271,15 @@ document.addEventListener('DOMContentLoaded', () => {
         kpiSuccessPct.textContent = `${pct}%`;
       }
     }
+    const kpiSelesaiCount = document.getElementById('ov-selesai');
+    const kpiTerlewatCount = document.getElementById('ov-terlewat');
+    if (kpiSelesaiCount) kpiSelesaiCount.textContent = cntSelesai;
+    if (kpiTerlewatCount) kpiTerlewatCount.textContent = cntTerlewat;
 
     if (typeof renderLoketCards === 'function') renderLoketCards('ov-loket-cards', data, loketData);
     if (typeof renderSessionManager === 'function') renderSessionManager(loketData);
     if (typeof renderAuditTrail === 'function') renderAuditTrail(data);
+    if (typeof renderOverviewTrafficBars === 'function') renderOverviewTrafficBars(data);
     if (typeof renderRecentEvents === 'function') renderRecentEvents('ov-recent-events', data);
   }
 
