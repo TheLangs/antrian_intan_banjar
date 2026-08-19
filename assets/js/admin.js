@@ -921,9 +921,11 @@ document.addEventListener('DOMContentLoaded', () => {
     hours.forEach((h) => {
       let vol = tMap[h];
       let pct = maxVol > 0 ? (vol / maxVol) * 100 : 0;
+      let barCss = pct > 0 ? 'from-accent to-blue-400 shadow-sm hover:shadow-md' : 'from-slate-100 to-slate-50 shadow-none border border-slate-100 border-b-0';
+
       let barHtml = `
           <div class="relative flex flex-col justify-end w-full h-full group pb-1">
-            <div class="w-full bg-gradient-to-t ${pct > 0 ? 'from-accent to-blue-400' : 'from-slate-100 to-slate-50'} shadow-sm hover:brightness-110 hover:shadow-md transition-all duration-300 rounded-t-lg relative z-10" style="height: ${pct}%; min-height: ${pct > 0 ? '6px' : '0'}">
+            <div class="w-full bg-gradient-to-t ${barCss} hover:brightness-110 transition-all duration-300 rounded-t-lg relative z-10" style="height: ${pct > 0 ? pct : 10}%; min-height: 6px;">
               <div class="absolute -top-9 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[11px] font-bold px-3 py-1.5 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 whitespace-nowrap">
                 ${vol} Tiket
                 <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
