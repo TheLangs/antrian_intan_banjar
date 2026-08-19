@@ -73,6 +73,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let isSpeaking = false;
   let announcementQueue = [];
 
+  let globalAudioMode = 'tts';
+  let globalAudioCustomUrl = '';
+
   // Allow Audio Interaction
   initAudioOverlay.addEventListener('click', () => {
     audioContextAllowed = true;
@@ -144,6 +147,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const marqUI = document.getElementById('tv-marquee');
             if (marqUI) marqUI.textContent = setting.val_text;
           }
+          if (setting.key_name === 'audio_mode') {
+            globalAudioMode = setting.val_text;
+          }
+          if (setting.key_name === 'audio_custom_url') {
+            globalAudioCustomUrl = setting.val_text;
+          }
         });
       }
     } catch (e) {
@@ -190,7 +199,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // Play Bell Chime (synthetic fallback if missing)
     await tryPlayBell();
 
-    // text-to-speech
+    if (globalAudioMode === 'url' && globalAudioCustomUrl) {
+      // Stream & Play Custom HTML5 Audio
+      const audioObj = new Audio(globalAudioCustomUrl);
+
+      audioObj.onended = () => {
+        setTimeout(() => {
+          isSpeaking = false;
+          processAnnouncementQueue();
+        }, 1000);
+      };
+
+      audioObj.play().catch((e) => {
+        console.error('Gagal memutar audio URL Custom:', e);
+        // Lepas kunci dan lanjut jika gagal diunduh
+        isSpeaking = false;
+        processAnnouncementQueue();
+      });
+      return; // Batalkan aliran TTS
+    }
+
+    // text-to-speech (Default Mode)
     if ('speechSynthesis' in window) {
       setTimeout(() => {
         // Split number to be spelled clearly: A, 0, 0, 5
@@ -308,6 +337,12 @@ document.addEventListener('DOMContentLoaded', () => {
           if (payload.new.key_name === 'marquee_text') {
             const marqUI = document.getElementById('tv-marquee');
             if (marqUI) marqUI.textContent = payload.new.val_text;
+          }
+          if (payload.new.key_name === 'audio_mode') {
+            globalAudioMode = payload.new.val_text;
+          }
+          if (payload.new.key_name === 'audio_custom_url') {
+            globalAudioCustomUrl = payload.new.val_text;
           }
         },
       )

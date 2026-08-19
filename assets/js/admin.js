@@ -1262,6 +1262,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const vidInput = document.getElementById('input-vid');
             if (vidInput) vidInput.value = setting.val_text;
           }
+          if (setting.key_name === 'audio_mode') {
+            const modeInput = document.getElementById('input-audio-mode');
+            if (modeInput) {
+              modeInput.value = setting.val_text;
+              if (setting.val_text === 'url') document.getElementById('wrapper-audio-url')?.classList.remove('hidden');
+            }
+          }
+          if (setting.key_name === 'audio_custom_url') {
+            const dInput = document.getElementById('input-audio-url');
+            if (dInput) dInput.value = setting.val_text;
+          }
         });
       }
     } catch (e) {
@@ -1332,6 +1343,51 @@ document.addEventListener('DOMContentLoaded', () => {
       } finally {
         btnSaveMarq.textContent = prevText;
         btnSaveMarq.disabled = false;
+      }
+    });
+  }
+
+  // --- AUDIO CONFIGURATOR LOGIC ---
+  const inpAudioMode = document.getElementById('input-audio-mode');
+  const wrapperAudioUrl = document.getElementById('wrapper-audio-url');
+  if (inpAudioMode && wrapperAudioUrl) {
+    inpAudioMode.addEventListener('change', () => {
+      if (inpAudioMode.value === 'url') {
+        wrapperAudioUrl.classList.remove('hidden');
+      } else {
+        wrapperAudioUrl.classList.add('hidden');
+      }
+    });
+  }
+
+  const btnSaveAudio = document.getElementById('btn-save-audio');
+  if (btnSaveAudio) {
+    btnSaveAudio.addEventListener('click', async () => {
+      const moVal = document.getElementById('input-audio-mode').value;
+      const urVal = document.getElementById('input-audio-url').value.trim();
+
+      if (moVal === 'url' && !urVal) {
+        return alert('Tautan Eksternal Audio Wajib diisi jika Anda menggunakan Mode Putar File Audio!');
+      }
+
+      const prevText = btnSaveAudio.textContent;
+      btnSaveAudio.textContent = 'Menyimpan...';
+      btnSaveAudio.disabled = true;
+
+      try {
+        const promises = [supabase.from('app_settings').update({ val_text: moVal }).eq('key_name', 'audio_mode'), supabase.from('app_settings').update({ val_text: urVal }).eq('key_name', 'audio_custom_url')];
+
+        const results = await Promise.all(promises);
+        results.forEach((r) => {
+          if (r.error) throw r.error;
+        });
+
+        alert('Pengaturan Profil Suara Panggilan berhasil diterapkan ke Seluruh Sistem!');
+      } catch (e) {
+        alert('Gagal menyimpan profil suara: ' + e.message);
+      } finally {
+        btnSaveAudio.textContent = prevText;
+        btnSaveAudio.disabled = false;
       }
     });
   }
