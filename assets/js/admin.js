@@ -133,36 +133,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function fetchDataSilent() {
     if (!checkSessionAuth()) return;
+    const activeTab = document.querySelector('.nav-item.active')?.getAttribute('data-tab');
+    if (activeTab !== 'overview' && activeTab !== 'session-manager' && activeTab !== 'display-control') return;
     try {
       const today = new Date();
       let startD = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0).toISOString();
       let endD = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999).toISOString();
-
-      if (inpStart && inpStart.value) {
-        const p = inpStart.value.split('-');
-        startD = new Date(p[0], p[1] - 1, p[2], 0, 0, 0).toISOString();
-      }
-      if (inpEnd && inpEnd.value) {
-        const p = inpEnd.value.split('-');
-        endD = new Date(p[0], p[1] - 1, p[2], 23, 59, 59, 999).toISOString();
-      } else {
-        // If no end date, use start date + 1 day threshold if needed, but default behavior is start date end-of-day
-        if (inpStart && inpStart.value) {
-          const p = inpStart.value.split('-');
-          endD = new Date(p[0], p[1] - 1, p[2], 23, 59, 59, 999).toISOString();
-        }
-      }
-
       const [resAntrian, resLoket] = await Promise.all([
         supabase.from('antrian').select('*, loket(nama_loket)').gte('waktu_ambil', startD).lte('waktu_ambil', endD).order('id_antrian', { ascending: true }),
         supabase.from('loket').select('*'),
       ]);
-
       if (resAntrian.error) throw resAntrian.error;
       hideOfflineBadge();
-
-      currentReportData = resAntrian.data || [];
-      processAndRender(currentReportData, resLoket.data || []);
+      processAndRenderLiveOverview(resAntrian.data || [], resLoket.data || []);
     } catch (err) {
       console.warn('Silent Live Polling failed:', err.message);
       showOfflineBadge();
@@ -206,7 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
       hideOfflineBadge();
 
       currentReportData = resAntrian.data || [];
-      processAndRender(currentReportData, resLoket.data || []);
+      processAndRenderLiveOverview(currentReportData, resLoket.data || []);
+      processAndRenderAnalytics(currentReportData);
     } catch (err) {
       console.error('Fetch Data Error:', err);
       showOfflineBadge();
@@ -234,168 +218,119 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function processAndRender(data, loketData = []) {
+  
+  function processAndRenderLiveOverview(data, loketData = []) {
+    let cntTotal = data.length;
+    let cntSelesai = 0, cntTerlewat = 0, totalWaitTimeSec = 0, waitCount = 0, totalSvcTimeSec = 0, svcCount = 0;
+    data.forEach(item => {
+      if (item.status === "selesai") cntSelesai++;
+      if (item.status === "terlewat" || item.status === "batal") cntTerlewat++;
+      if (item.waktu_ambil && item.waktu_panggil) {
+        let tW = (new Date(item.waktu_panggil) - new Date(item.waktu_ambil)) / 1000;
+        if (tW > 0) { totalWaitTimeSec += tW; waitCount++; }
+      }
+      if (item.waktu_panggil && item.waktu_selesai && item.status === "selesai") {
+        let tS = (new Date(item.waktu_selesai) - new Date(item.waktu_panggil)) / 1000;
+        if (tS > 0) { totalSvcTimeSec += tS; svcCount++; }
+      }
+    });
+
+    if (kpiTotal) kpiTotal.textContent = String(cntTotal);
+    if (kpiSelesai) kpiSelesai.textContent = String(cntSelesai);
+    if (kpiAvgWait) kpiAvgWait.textContent = waitCount > 0 ? formatSec(totalWaitTimeSec / waitCount) : "0m 0s";
+    if (kpiAvgSvc) kpiAvgSvc.textContent = svcCount > 0 ? formatSec(totalSvcTimeSec / svcCount) : "0m 0s";
+    
+    const kpiSuccessPct = document.getElementById("ov-success-pct");
+    if (kpiSuccessPct) {
+      if (cntTotal === 0) kpiSuccessPct.textContent = "0%";
+      else {
+        const pct = Math.round((cntSelesai / cntTotal) * 100);
+        kpiSuccessPct.textContent = `${pct}%`;
+      }
+    }
+    
+    if (typeof renderLoketCards === "function") renderLoketCards("ov-loket-cards", data, loketData);
+    if (typeof renderSessionManager === "function") renderSessionManager(loketData);
+    if (typeof renderAuditTrail === "function") renderAuditTrail(data);
+    if (typeof renderRecentEvents === "function") renderRecentEvents("ov-recent-events", data);
+  }
+
+  function processAndRenderAnalytics(data) {
     populateFilterDropdowns(data);
     if (data.length === 0) {
-      if (tableBody) tableBody.innerHTML = '';
-      if (tableEmpty) tableEmpty.classList.remove('hidden');
-      if (kpiTotal) kpiTotal.textContent = '0';
-      if (kpiSelesai) kpiSelesai.textContent = '0';
-      if (kpiAvgWait) kpiAvgWait.textContent = '0m 0s';
-      if (kpiAvgSvc) kpiAvgSvc.textContent = '0m 0s';
-      const kpiSuccessPct = document.getElementById('ov-success-pct');
-      if (kpiSuccessPct) kpiSuccessPct.textContent = '0%';
-
-      if (typeof renderLoketCards === 'function') renderLoketCards('ov-loket-cards', data, loketData);
-      if (typeof renderSessionManager === 'function') renderSessionManager(loketData);
-      if (typeof renderAuditTrail === 'function') renderAuditTrail(data);
-      if (typeof renderRecentEvents === 'function') renderRecentEvents('ov-recent-events', data);
-      if (typeof renderKasirAnalytics === 'function') renderKasirAnalytics(data);
-      if (typeof renderTrafficAnalytics === 'function') renderTrafficAnalytics(data);
-      if (typeof renderDigitalAnalytics === 'function') renderDigitalAnalytics(data);
+      if (tableBody) tableBody.innerHTML = "";
+      if (tableEmpty) tableEmpty.classList.remove("hidden");
+      if (typeof renderKasirAnalytics === "function") renderKasirAnalytics(data);
+      if (typeof renderTrafficAnalytics === "function") renderTrafficAnalytics(data);
+      if (typeof renderDigitalAnalytics === "function") renderDigitalAnalytics(data);
       return;
     }
 
-    // --- APPLY FILTERS ---
-    const searchTerm = (document.getElementById('hs-search')?.value || '').toLowerCase();
-    const statusTerm = (document.getElementById('hs-status')?.value || 'ALL').toLowerCase();
-    const loketTerm = document.getElementById('hs-loket')?.value || 'ALL';
+    const searchTerm = (document.getElementById("hs-search")?.value || "").toLowerCase();
+    const statusTerm = (document.getElementById("hs-status")?.value || "ALL").toLowerCase();
+    const loketTerm = document.getElementById("hs-loket")?.value || "ALL";
 
     let filteredData = data.filter((item) => {
       let matchSearch = true;
       if (searchTerm) {
-        const ticket = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`.toLowerCase();
-        const loket = (item.loket?.nama_loket || '').toLowerCase();
-        const petugas = (item.nama_petugas || '').toLowerCase();
+        const ticket = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, "0")}`.toLowerCase();
+        const loket = (item.loket?.nama_loket || "").toLowerCase();
+        const petugas = (item.nama_petugas || "").toLowerCase();
         matchSearch = ticket.includes(searchTerm) || loket.includes(searchTerm) || petugas.includes(searchTerm);
       }
       let matchStatus = true;
-      if (statusTerm !== 'all') {
-        matchStatus = (item.status || '').toLowerCase() === statusTerm;
-      }
+      if (statusTerm !== "all") matchStatus = (item.status || "").toLowerCase() === statusTerm;
       let matchLoket = true;
-      if (loketTerm !== 'ALL') {
-        matchLoket = item.loket?.nama_loket === loketTerm;
-      }
+      if (loketTerm !== "ALL") matchLoket = item.loket?.nama_loket === loketTerm;
       return matchSearch && matchStatus && matchLoket;
     });
 
     window.filteredHistoryData = filteredData;
-    let cntTotal = filteredData.length;
-    let cntSelesai = 0;
-    let cntTerlewat = 0;
-    let totalWaitTimeSec = 0;
-    let waitCount = 0;
-    let totalSvcTimeSec = 0;
-    let svcCount = 0;
-
-    if (tableBody) tableBody.innerHTML = '';
-    if (tableEmpty) tableEmpty.classList.add('hidden');
+    if (tableBody) tableBody.innerHTML = "";
+    if (tableEmpty) tableEmpty.classList.add("hidden");
 
     let renderIdx = 0;
     filteredData.forEach((item) => {
-      if (item.status === 'selesai') cntSelesai++;
-      if (item.status === 'terlewat' || item.status === 'batal') cntTerlewat++;
-
-      // Wait Time Calc (Manual logic based off timestamps instead of complex DB TimestampDiff)
-      let waitTimeStr = '-';
-      let svcTimeStr = '-';
-
-      if (item.waktu_panggil) {
-        const w = (new Date(item.waktu_panggil) - new Date(item.waktu_ambil)) / 1000;
-        if (w > 0) {
-          totalWaitTimeSec += w;
-          waitCount++;
-          waitTimeStr = formatSec(w);
-        }
+      let waitTimeStr = "-";
+      if (item.waktu_ambil && item.waktu_panggil) {
+        let s = (new Date(item.waktu_panggil) - new Date(item.waktu_ambil)) / 1000;
+        if (s > 0) waitTimeStr = formatSec(s);
+      }
+      let svcTimeStr = "-";
+      if (item.waktu_panggil && item.waktu_selesai && item.status === "selesai") {
+        let s = (new Date(item.waktu_selesai) - new Date(item.waktu_panggil)) / 1000;
+        if (s > 0) svcTimeStr = formatSec(s);
       }
 
-      if (item.waktu_panggil && item.waktu_selesai && item.status === 'selesai') {
-        const s = (new Date(item.waktu_selesai) - new Date(item.waktu_panggil)) / 1000;
-        if (s > 0) {
-          totalSvcTimeSec += s;
-          svcCount++;
-          svcTimeStr = formatSec(s);
-        }
-      }
-
-      if (renderIdx < 100) {
-        // Render Row
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50 transition-colors';
-
-        let statusBadge = '';
-        if (item.status === 'selesai') statusBadge = '<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">Selesai</span>';
-        else if (item.status === 'terlewat') statusBadge = '<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Terlewat</span>';
-        else if (item.status === 'dipanggil') statusBadge = '<span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">Dipanggil</span>';
-        else statusBadge = '<span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">Menunggu</span>';
-
-        const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
-
-        const loketPetugas = (item.loket?.nama_loket || 'LOKET ' + item.id_loket) + (item.nama_petugas ? ` / ${item.nama_petugas}` : '');
-        const timeMasuk = item.waktu_ambil ? new Date(item.waktu_ambil).toLocaleTimeString('id-ID') : '-';
-        const timePanggil = item.waktu_panggil ? new Date(item.waktu_panggil).toLocaleTimeString('id-ID') : '-';
-        const timeSelesai = item.waktu_selesai ? new Date(item.waktu_selesai).toLocaleTimeString('id-ID') : '-';
-
-        tr.innerHTML = `
-                  <td class="px-5 py-4 font-bold text-slate-800">${noLengkap}</td>
-                  <td class="px-5 py-4 uppercase text-xs font-bold text-slate-500">${item.metode_tiket}</td>
-                  <td class="px-5 py-4 text-xs font-semibold text-slate-600">${loketPetugas}</td>
-                  <td class="px-5 py-4 text-xs font-mono text-slate-500">${timeMasuk}</td>
-                  <td class="px-5 py-4 text-xs font-mono text-slate-500">${timePanggil}</td>
-                  <td class="px-5 py-4 text-xs font-mono text-slate-500">${timeSelesai}</td>
-                  <td class="px-5 py-4 text-amber-600 text-xs font-mono">${waitTimeStr}</td>
-                  <td class="px-5 py-4 text-emerald-600 text-xs font-mono">${svcTimeStr}</td>
-                  <td class="px-5 py-4 text-right">${statusBadge}</td>
-              `;
-        if (tableBody) tableBody.appendChild(tr);
-      } else if (renderIdx === 100) {
-        // Render Trim Warning
-        const warningTr = document.createElement('tr');
-        warningTr.innerHTML = `<td colspan="9" class="text-center py-4 text-xs font-bold text-slate-400 bg-slate-50">Tampilan GUI dibatasi 100 baris pertama untuk performa. Unduh CSV/PDF untuk menganalisa data penuh.</td>`;
-        if (tableBody) tableBody.appendChild(warningTr);
-      }
+      let tr = document.createElement("tr");
+      tr.className = (renderIdx % 2 === 0 ? "bg-white " : "bg-slate-50/50 ") + "hover:bg-blue-50/50 transition-colors border-b border-slate-100/70 border-dashed text-xs text-slate-600 font-medium whitespace-nowrap";
+      const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, "0")}`;
+      const wa = item.waktu_ambil ? new Date(item.waktu_ambil).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : "-";
+      const wp = item.waktu_panggil ? new Date(item.waktu_panggil).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : "-";
+      const ws = item.waktu_selesai ? new Date(item.waktu_selesai).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : "-";
+      
+      let b = "bg-slate-100 text-slate-500";
+      if (item.status === "selesai") b = "bg-emerald-100 text-emerald-700";
+      if (item.status === "panggil") b = "bg-blue-100 text-blue-700";
+      if (item.status === "terlewat") b = "bg-amber-100 text-amber-700";
+      if (item.status === "batal") b = "bg-red-100 text-red-700";
+      
+      tr.innerHTML = `<td class="py-3.5 px-6 font-bold flex items-center gap-2"><div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg></div>${noLengkap}</td>
+<td class="py-3.5 px-6"><span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${item.metode_tiket || "OFFLINE"}</span></td>
+<td class="py-3.5 px-6"><span class="px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase ${b}">${item.status}</span></td>
+<td class="py-3.5 px-6 font-semibold text-slate-700">${item.loket?.nama_loket || "-"} <span class="text-xs text-slate-400 font-normal ml-1">| ${item.nama_petugas || "-"}</span></td>
+<td class="py-3.5 px-6"><div class="flex items-center gap-3"><div class="flex flex-col"><span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Ambil</span><span class="font-semibold">${wa}</span></div><div class="flex flex-col"><span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Layan</span><span class="font-semibold">${wp}</span></div><div class="flex flex-col"><span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Selesai</span><span class="font-semibold">${ws}</span></div></div></td>
+<td class="py-3.5 px-6"><div class="flex items-center gap-4 text-right"><div class="flex flex-col"><span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Tunggu</span><span class="font-medium">${waitTimeStr}</span></div><div class="flex flex-col"><span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Layan</span><span class="font-medium text-slate-700">${svcTimeStr}</span></div></div></td>`;
+      tableBody.appendChild(tr);
       renderIdx++;
     });
 
-    // Update KPIs with safe checks
-    if (kpiTotal) kpiTotal.textContent = cntTotal;
-    if (kpiSelesai) kpiSelesai.textContent = cntSelesai;
-    const kpiTerlewat = document.getElementById('ov-terlewat');
-    if (kpiTerlewat) kpiTerlewat.textContent = cntTerlewat;
-
-    if (kpiAvgWait) {
-      if (waitCount > 0) {
-        kpiAvgWait.textContent = formatSec(totalWaitTimeSec / waitCount);
-      } else {
-        kpiAvgWait.textContent = '0m 0s';
-      }
-    }
-
-    if (kpiAvgSvc) {
-      if (svcCount > 0) {
-        kpiAvgSvc.textContent = formatSec(totalSvcTimeSec / svcCount);
-      } else {
-        kpiAvgSvc.textContent = '0m 0s';
-      }
-    }
-
-    // Extra Data Hooks for Bento
-    const kpiSuccessPct = document.getElementById('ov-success-pct');
-    if (kpiSuccessPct) kpiSuccessPct.textContent = Math.round((cntSelesai / (cntTotal || 1)) * 100) + '%';
-
-    if (typeof renderLoketCards === 'function') renderLoketCards('ov-loket-cards', data, loketData);
-    if (typeof renderSessionManager === 'function') renderSessionManager(loketData);
-    if (typeof renderAuditTrail === 'function') renderAuditTrail(data);
-    if (typeof renderRecentEvents === 'function') renderRecentEvents('ov-recent-events', data);
-
-    // Call new analytics renderers
-    if (typeof renderKasirAnalytics === 'function') renderKasirAnalytics(data);
-    if (typeof renderTrafficAnalytics === 'function') renderTrafficAnalytics(data);
-    if (typeof renderDigitalAnalytics === 'function') renderDigitalAnalytics(data);
+    if (typeof renderKasirAnalytics === "function") renderKasirAnalytics(data);
+    if (typeof renderTrafficAnalytics === "function") renderTrafficAnalytics(data);
+    if (typeof renderDigitalAnalytics === "function") renderDigitalAnalytics(data);
   }
 
-  function formatSec(seconds) {
+function formatSec(seconds) {
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
     return `${m}m ${s}s`;
