@@ -134,8 +134,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const mc = document.getElementById('media-container');
     if (!mc) return;
 
+    // Smart YouTube ID Extractor
+    function extractYouTubeID(url) {
+      if (!url) return '';
+      const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return match && match[2].length === 11 ? match[2] : url; // fallback
+    }
+
     if (globalVideoMode === 'youtube' && globalVideoUrl) {
-      mc.innerHTML = `<iframe class="w-full h-full border-0" src="https://www.youtube.com/embed/${globalVideoUrl}?autoplay=1&mute=1&loop=1&playlist=${globalVideoUrl}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+      const safeId = extractYouTubeID(globalVideoUrl);
+      mc.innerHTML = `<iframe class="w-full h-full border-0" src="https://www.youtube.com/embed/${safeId}?autoplay=1&mute=1&loop=1&playlist=${safeId}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
     } else if (globalVideoMode === 'local' && globalVideoCustomUrl) {
       mc.innerHTML = `<video class="w-full h-full object-cover" autoplay loop muted src="${globalVideoCustomUrl}"></video>`;
     } else {
@@ -384,15 +393,31 @@ document.addEventListener('DOMContentLoaded', () => {
           table: 'app_settings',
         },
         (payload) => {
+          let reRenderMedia = false;
+
           if (payload.new.key_name === 'marquee_text') {
             const marqUI = document.getElementById('tv-marquee');
             if (marqUI) marqUI.textContent = payload.new.val_text;
           }
-          if (payload.new.key_name === 'audio_mode') {
-            globalAudioMode = payload.new.val_text;
+          if (payload.new.key_name === 'audio_mode') globalAudioMode = payload.new.val_text;
+          if (payload.new.key_name === 'audio_custom_url') globalAudioCustomUrl = payload.new.val_text;
+          if (payload.new.key_name === 'audio_tts_template') globalAudioTtsTemplate = payload.new.val_text;
+
+          if (payload.new.key_name === 'video_mode') {
+            globalVideoMode = payload.new.val_text;
+            reRenderMedia = true;
           }
-          if (payload.new.key_name === 'audio_custom_url') {
-            globalAudioCustomUrl = payload.new.val_text;
+          if (payload.new.key_name === 'video_url') {
+            globalVideoUrl = payload.new.val_text;
+            reRenderMedia = true;
+          }
+          if (payload.new.key_name === 'video_custom_url') {
+            globalVideoCustomUrl = payload.new.val_text;
+            reRenderMedia = true;
+          }
+
+          if (reRenderMedia) {
+            renderMediaContainer();
           }
         },
       )
