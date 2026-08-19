@@ -23,8 +23,32 @@
       </div>
     </header>
 
-    <!-- Main Grid For Lockers (Dynamically injected via JS) -->
-    <main id="display-grid" class="flex-grow flex flex-row flex-wrap items-center justify-center p-8 gap-8"></main>
+    <!-- Main Bento Grid Layout (Top Lokets, Center Media, Right Sidebar History) -->
+    <main class="flex-grow grid grid-cols-12 gap-6 p-6 h-full overflow-hidden">
+      <!-- Left Column: Lokets & Media -->
+      <section class="col-span-8 flex flex-col gap-6 h-[calc(100vh-180px)]">
+        <!-- Top Lockers -->
+        <div id="display-grid-top" class="grid grid-cols-1 md:grid-cols-3 gap-6 h-48 shrink-0">
+          <!-- Dynamically injected via JS -->
+        </div>
+
+        <!-- Media Player Container -->
+        <div id="media-container" class="bg-slate-900 rounded-[2rem] shadow-2xl flex-grow overflow-hidden relative border border-slate-300 flex items-center justify-center">
+          <!-- Video element will be injected here via JS based on options -->
+          <p class="text-slate-500 font-bold tracking-widest text-xl opacity-50">Menunggu Sinyal Media...</p>
+        </div>
+      </section>
+
+      <!-- Right Column: Queue History Sidebar -->
+      <aside class="col-span-4 bg-white rounded-[2rem] shadow-xl flex flex-col overflow-hidden border border-slate-200 h-[calc(100vh-180px)]">
+        <div class="bg-blue-800 text-white p-6 shadow-sm z-10 shrink-0 text-center">
+          <h3 class="text-2xl font-black tracking-widest uppercase">Baru Saja Dipanggil</h3>
+        </div>
+        <div id="queue-history-list" class="flex-grow overflow-y-hidden relative p-4 flex flex-col gap-3 bg-slate-50/50">
+          <!-- Activity list dynamically stacked via JS -->
+        </div>
+      </aside>
+    </main>
 
     <!-- Footer Running Text -->
     <footer class="bg-blue-900 border-t border-blue-950 shrink-0 shadow-inner overflow-hidden flex items-center py-4 px-6 z-10 w-full relative">

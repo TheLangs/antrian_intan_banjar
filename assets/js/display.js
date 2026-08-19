@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  const displayGrid = document.getElementById('display-grid');
+  const displayGrid = document.getElementById('display-grid-top');
   let counters = {};
 
   async function initDisplayGrid() {
@@ -36,25 +36,22 @@ document.addEventListener('DOMContentLoaded', () => {
       data.forEach((loket) => {
         const id = loket.id_loket;
         const card = document.createElement('div');
-        // We use min-w and flex-1 to allow flexible wrap scaling if there are many lokets
-        card.className = 'flex-1 min-w-[300px] max-w-[450px] bg-white rounded-[2rem] shadow-xl border border-slate-200 flex flex-col overflow-hidden transition-all duration-300 transform h-[450px] xl:h-[600px] min-h-[400px]';
+        card.className = 'bg-white rounded-2xl shadow border border-slate-200 flex flex-col overflow-hidden h-full relative transform transition-all duration-300';
         card.id = `card-loket-${id}`;
         card.innerHTML = `
-          <div class="bg-blue-800 text-white text-center py-6 transition-colors duration-300">
-            <h2 class="text-3xl xl:text-4xl font-extrabold tracking-wide">${loket.nama_loket.toUpperCase()}</h2>
+          <div class="bg-blue-800 text-white text-center py-2 transition-colors duration-300">
+             <h2 class="text-lg font-bold">${loket.nama_loket.toUpperCase()}</h2>
           </div>
-          <div class="flex-grow flex flex-col items-center justify-center p-6 xl:p-10 bg-slate-50/50">
-            <p class="text-xl xl:text-2xl text-slate-500 font-semibold mb-4 xl:mb-6 tracking-widest uppercase">Nomor Antrean</p>
-            <div class="text-[100px] xl:text-[140px] font-black text-slate-800 leading-none tracking-tighter" id="disp-no-${id}">---</div>
+          <div class="flex-grow flex flex-col items-center justify-center bg-slate-50 relative pb-4">
+             <div class="text-[55px] font-black text-slate-800 leading-none tracking-tighter" id="disp-no-${id}">---</div>
           </div>
-          <div class="bg-slate-100 py-4 xl:py-5 px-6 xl:px-8 border-t border-slate-200 flex items-center justify-between">
-            <span class="text-slate-500 font-medium text-lg xl:text-xl">Petugas:</span>
-            <span class="text-slate-800 font-bold text-lg xl:text-xl" id="disp-nama-${id}">-</span>
+          <div class="absolute bottom-0 w-full bg-slate-100 py-1.5 px-3 border-t border-slate-200 flex justify-between">
+             <span class="text-xs text-slate-500">Petugas:</span>
+             <span class="text-xs font-bold text-slate-800" id="disp-nama-${id}">-</span>
           </div>
         `;
         displayGrid.appendChild(card);
 
-        // Map elements
         counters[id] = {
           card: card,
           no: card.querySelector(`#disp-no-${id}`),
@@ -75,29 +72,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let globalAudioMode = 'tts';
   let globalAudioCustomUrl = '';
+  let globalAudioTtsTemplate = 'Nomor antrean, {nomor}, silakan menuju, Loket {loket}';
+
+  let globalVideoMode = 'youtube';
+  let globalVideoUrl = '';
+  let globalVideoCustomUrl = '';
 
   // Allow Audio Interaction
   initAudioOverlay.addEventListener('click', () => {
     audioContextAllowed = true;
     initAudioOverlay.classList.add('hidden');
 
-    // optional: request full screen
     if (document.documentElement.requestFullscreen) {
       document.documentElement.requestFullscreen().catch((e) => console.log(e));
     }
 
-    // Initialize voices on interaction
-    window.speechSynthesis.getVoices();
+    if (window.speechSynthesis) window.speechSynthesis.getVoices();
   });
 
   setInterval(updateTime, 1000);
   updateTime();
 
-  // Initial DOM and Fetch
   initDisplayGrid();
   fetchSettings();
-
-  // Realtime Listener
   setupRealtime();
 
   function updateTime() {
@@ -117,14 +114,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const { data, error } = await supabase.from('antrian').select('id_loket, nomor_antrian, kode_antrian, nama_petugas').eq('status', 'dipanggil').gte('waktu_ambil', todayStart.toISOString());
-
       if (error) throw error;
-
-      // clear defaults
       Object.keys(counters).forEach((id) => updateCounterUI(id, '---', '-'));
-
       if (data && data.length > 0) {
-        // map loket to UI
         data.forEach((item) => {
           if (item.id_loket && counters[item.id_loket]) {
             const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
@@ -134,6 +126,19 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (e) {
       console.error('Fetch Initial Err:', e);
+    }
+  }
+
+  function renderMediaContainer() {
+    const mc = document.getElementById('media-container');
+    if (!mc) return;
+
+    if (globalVideoMode === 'youtube' && globalVideoUrl) {
+      mc.innerHTML = `<iframe class="w-full h-full border-0" src="https://www.youtube.com/embed/${globalVideoUrl}?autoplay=1&mute=1&loop=1&playlist=${globalVideoUrl}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+    } else if (globalVideoMode === 'local' && globalVideoCustomUrl) {
+      mc.innerHTML = `<video class="w-full h-full object-cover" autoplay loop muted src="${globalVideoCustomUrl}"></video>`;
+    } else {
+      mc.innerHTML = `<p class="text-slate-500 font-bold tracking-widest text-xl opacity-50">Menunggu Sinyal Media...</p>`;
     }
   }
 
@@ -147,13 +152,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const marqUI = document.getElementById('tv-marquee');
             if (marqUI) marqUI.textContent = setting.val_text;
           }
-          if (setting.key_name === 'audio_mode') {
-            globalAudioMode = setting.val_text;
-          }
-          if (setting.key_name === 'audio_custom_url') {
-            globalAudioCustomUrl = setting.val_text;
-          }
+          if (setting.key_name === 'audio_mode') globalAudioMode = setting.val_text;
+          if (setting.key_name === 'audio_custom_url') globalAudioCustomUrl = setting.val_text;
+          if (setting.key_name === 'audio_tts_template') globalAudioTtsTemplate = setting.val_text;
+
+          if (setting.key_name === 'video_mode') globalVideoMode = setting.val_text;
+          if (setting.key_name === 'video_url') globalVideoUrl = setting.val_text;
+          if (setting.key_name === 'video_custom_url') globalVideoCustomUrl = setting.val_text;
         });
+        renderMediaContainer();
       }
     } catch (e) {
       console.error('Fetch Settings Err:', e);
@@ -225,12 +232,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // Split number to be spelled clearly: A, 0, 0, 5
         let spokenNomor = nomorLengkap.replace('-', ' ').split('').join(' ');
 
-        const text = `Nomor antrean, ${spokenNomor}, silakan menuju, Loket ${idLoket}`;
+        let text = globalAudioTtsTemplate.replace(/\{nomor\}/g, spokenNomor).replace(/\{loket\}/g, idLoket);
+        if (!text) text = `Nomor antrean, ${spokenNomor}, silakan menuju, Loket ${idLoket}`;
 
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'id-ID';
         utterance.rate = 0.85;
-        utterance.pitch = 1;
+        utterance.pitch = 1.1; // Sedikit dinaikkan untuk perempuan
+
+        // Cari profil suara perempuan Indonesia
+        const voices = window.speechSynthesis.getVoices();
+        const fmVoice = voices.find((v) => v.lang.includes('id') && v.name.toLowerCase().includes('female'));
+        if (fmVoice) {
+          utterance.voice = fmVoice;
+        }
 
         utterance.onend = () => {
           setTimeout(() => {
@@ -299,6 +314,37 @@ document.addEventListener('DOMContentLoaded', () => {
     playNote(523.25, audioCtx.currentTime + 0.5, 0.8); // C5
   }
 
+  // --- Queue History Tracker ---
+  function pushToHistory(nomorLengkap, namaPetugas, idLoket) {
+    const container = document.getElementById('queue-history-list');
+    if (!container) return;
+    const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+    const el = document.createElement('div');
+    el.className = 'bg-white p-4 rounded-[1rem] border border-slate-200 shadow-sm flex items-center justify-between shrink-0 transform transition-all duration-500 opacity-0 -translate-y-4';
+    el.innerHTML = `
+      <div>
+         <span class="text-[10px] font-bold text-slate-400 block tracking-widest">${timeStr}</span>
+         <span class="text-2xl font-black text-blue-900 leading-none">${nomorLengkap}</span>
+      </div>
+      <div class="text-right">
+         <span class="text-[10px] font-bold text-slate-400 block break-words lg:max-w-[100px] max-w-[80px]">${namaPetugas.split(' ')[0]}</span>
+         <span class="text-sm font-bold text-slate-800">LOKET ${idLoket}</span>
+      </div>
+    `;
+    container.prepend(el);
+
+    // Animate in
+    setTimeout(() => {
+      el.classList.remove('opacity-0', '-translate-y-4');
+    }, 50);
+
+    // Keep memory low
+    while (container.children.length > 10) {
+      container.removeChild(container.lastChild);
+    }
+  }
+
   function setupRealtime() {
     supabase
       .channel('public-antrian-display')
@@ -315,6 +361,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update exact UI
             const noLengkap = `${newData.kode_antrian}-${String(newData.nomor_antrian).padStart(3, '0')}`;
             updateCounterUI(newData.id_loket, noLengkap, newData.nama_petugas);
+
+            // Populate Right Sidebar History
+            pushToHistory(noLengkap, newData.nama_petugas || 'Admin', newData.id_loket);
 
             // Trigger sound & visual
             playCallingAnnouncement(newData.id_loket, noLengkap);
@@ -354,6 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .on('broadcast', { event: 'recall' }, (payload) => {
         const { id_loket, nomor_lengkap } = payload.payload;
         playCallingAnnouncement(id_loket, nomor_lengkap);
+        // Note: We don't push to History on pure Recalls to avoid spamming the log
       })
       .subscribe();
   }

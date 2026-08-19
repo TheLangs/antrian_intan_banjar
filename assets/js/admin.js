@@ -1258,20 +1258,44 @@ document.addEventListener('DOMContentLoaded', () => {
             const marqInput = document.getElementById('input-marq');
             if (marqInput) marqInput.value = setting.val_text;
           }
+          if (setting.key_name === 'video_mode') {
+            const vm = document.getElementById('input-video-mode');
+            if (vm) {
+              vm.value = setting.val_text;
+              if (setting.val_text === 'local') {
+                document.getElementById('wrapper-vid-yt')?.classList.add('hidden');
+                document.getElementById('wrapper-vid-local')?.classList.remove('hidden');
+              }
+            }
+          }
           if (setting.key_name === 'video_url') {
             const vidInput = document.getElementById('input-vid');
             if (vidInput) vidInput.value = setting.val_text;
+          }
+          if (setting.key_name === 'video_custom_url') {
+            const vs = document.getElementById('select-vid-storage');
+            if (vs) vs.value = setting.val_text;
           }
           if (setting.key_name === 'audio_mode') {
             const modeInput = document.getElementById('input-audio-mode');
             if (modeInput) {
               modeInput.value = setting.val_text;
-              if (setting.val_text === 'url') document.getElementById('wrapper-audio-url')?.classList.remove('hidden');
+              if (setting.val_text === 'url') {
+                document.getElementById('wrapper-audio-tts')?.classList.add('hidden');
+                document.getElementById('wrapper-audio-url')?.classList.remove('hidden');
+              }
             }
           }
+          if (setting.key_name === 'audio_tts_template') {
+            const tts = document.getElementById('input-tts-template');
+            if (tts) tts.value = setting.val_text;
+          }
           if (setting.key_name === 'audio_custom_url') {
-            const dInput = document.getElementById('input-audio-url');
-            if (dInput) dInput.value = setting.val_text;
+            const aStorage = document.getElementById('select-audio-storage');
+            if (aStorage) {
+              // we set this dynamically later after storage fetch, but keep track
+              aStorage.dataset.initialValue = setting.val_text;
+            }
           }
         });
       }
@@ -1313,11 +1337,108 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // --- MEDIA STORAGE UPLOAD & FETCH ---
+  async function fetchStorageMedia(bucket, typeFilter, selectElemId) {
+    const sel = document.getElementById(selectElemId);
+    if (!sel) return;
+    try {
+      const { data, error } = await supabase.storage.from(bucket).list('', { limit: 100 });
+      if (error) throw error;
+      if (data) {
+        const filtered = data.filter((f) => f.metadata && f.metadata.mimetype && f.metadata.mimetype.includes(typeFilter));
+        const { data: pubData } = supabase.storage.from(bucket).getPublicUrl('');
+        const baseUrl = pubData.publicUrl;
+
+        let h = `<option value="">-- Pilih File dari Storage --</option>`;
+        filtered.forEach((f) => {
+          const fileUrl = baseUrl + f.name;
+          h += `<option value="${fileUrl}">${f.name}</option>`;
+        });
+        sel.innerHTML = h;
+
+        // map init value if set from fetchSettings
+        if (sel.dataset.initialValue) {
+          sel.value = sel.dataset.initialValue;
+          sel.dataset.initialValue = ''; // clear
+        }
+      }
+    } catch (e) {
+      console.warn('Error fetching storage:', e);
+    }
+  }
+
+  async function uploadMedia(fileInputId, bucket, btnId) {
+    const input = document.getElementById(fileInputId);
+    const btn = document.getElementById(btnId);
+    if (!input || !input.files || input.files.length === 0) return alert('Pilih file terlebih dahulu.');
+
+    const file = input.files[0];
+    const prevT = btn.textContent;
+    btn.textContent = '...';
+    btn.disabled = true;
+
+    try {
+      // create safe name
+      const ext = file.name.split('.').pop();
+      const safeName = `${Date.now()}_${Math.random().toString(36).substr(2, 5)}.${ext}`;
+
+      const { data, error } = await supabase.storage.from(bucket).upload(safeName, file, { cacheControl: '3600', upsert: false });
+      if (error) throw error;
+      alert('File berhasil diunggah!');
+
+      // refresh lists
+      if (file.type.includes('video')) fetchStorageMedia('media', 'video', 'select-vid-storage');
+      if (file.type.includes('audio')) fetchStorageMedia('media', 'audio', 'select-audio-storage');
+
+      input.value = ''; // reset
+    } catch (e) {
+      alert('Gagal unggah: ' + e.message);
+    } finally {
+      btn.textContent = prevT;
+      btn.disabled = false;
+    }
+  }
+
+  // Bind Upload Buttons
+  document.getElementById('btn-upload-vid')?.addEventListener('click', () => uploadMedia('upload-vid', 'media', 'btn-upload-vid'));
+  document.getElementById('btn-upload-audio')?.addEventListener('click', () => uploadMedia('upload-audio', 'media', 'btn-upload-audio'));
+
+  // Bind Mode Toggles
+  const ivm = document.getElementById('input-video-mode');
+  if (ivm) {
+    ivm.addEventListener('change', () => {
+      const mode = ivm.value;
+      if (mode === 'youtube') {
+        document.getElementById('wrapper-vid-yt')?.classList.remove('hidden');
+        document.getElementById('wrapper-vid-local')?.classList.add('hidden');
+      } else {
+        document.getElementById('wrapper-vid-yt')?.classList.add('hidden');
+        document.getElementById('wrapper-vid-local')?.classList.remove('hidden');
+      }
+    });
+  }
+
+  const iam = document.getElementById('input-audio-mode');
+  if (iam) {
+    iam.addEventListener('change', () => {
+      const mode = iam.value;
+      if (mode === 'url') {
+        document.getElementById('wrapper-audio-tts')?.classList.add('hidden');
+        document.getElementById('wrapper-audio-url')?.classList.remove('hidden');
+      } else {
+        document.getElementById('wrapper-audio-tts')?.classList.remove('hidden');
+        document.getElementById('wrapper-audio-url')?.classList.add('hidden');
+      }
+    });
+  }
+
   const btnSaveMarq = document.getElementById('btn-save-marq');
   if (btnSaveMarq) {
     btnSaveMarq.addEventListener('click', async () => {
       const newVal = document.getElementById('input-marq').value.trim();
-      const vidVal = document.getElementById('input-vid') ? document.getElementById('input-vid').value.trim() : '';
+      const vMode = document.getElementById('input-video-mode').value;
+      const vYt = document.getElementById('input-vid') ? document.getElementById('input-vid').value.trim() : '';
+      const vCust = document.getElementById('select-vid-storage') ? document.getElementById('select-vid-storage').value : '';
 
       if (!newVal) return alert('Teks pengumuman tidak boleh kosong!');
 
@@ -1326,11 +1447,12 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSaveMarq.disabled = true;
 
       try {
-        const promises = [supabase.from('app_settings').update({ val_text: newVal }).eq('key_name', 'marquee_text')];
-
-        if (vidVal) {
-          promises.push(supabase.from('app_settings').update({ val_text: vidVal }).eq('key_name', 'video_url'));
-        }
+        const promises = [
+          supabase.from('app_settings').update({ val_text: newVal }).eq('key_name', 'marquee_text'),
+          supabase.from('app_settings').update({ val_text: vMode }).eq('key_name', 'video_mode'),
+          supabase.from('app_settings').update({ val_text: vYt }).eq('key_name', 'video_url'),
+          supabase.from('app_settings').update({ val_text: vCust }).eq('key_name', 'video_custom_url'),
+        ];
 
         const results = await Promise.all(promises);
         results.forEach((r) => {
@@ -1359,15 +1481,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
   const btnSaveAudio = document.getElementById('btn-save-audio');
   if (btnSaveAudio) {
     btnSaveAudio.addEventListener('click', async () => {
       const moVal = document.getElementById('input-audio-mode').value;
-      const urVal = document.getElementById('input-audio-url').value.trim();
+      const ttsVal = document.getElementById('input-tts-template') ? document.getElementById('input-tts-template').value.trim() : '';
+      const urVal = document.getElementById('select-audio-storage') ? document.getElementById('select-audio-storage').value : '';
 
       if (moVal === 'url' && !urVal) {
-        return alert('Tautan Eksternal Audio Wajib diisi jika Anda menggunakan Mode Putar File Audio!');
+        return alert('Pastikan Anda telah memilih File Suara Custom jika mode Putar Audio diaktifkan!');
       }
 
       const prevText = btnSaveAudio.textContent;
@@ -1375,14 +1497,18 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSaveAudio.disabled = true;
 
       try {
-        const promises = [supabase.from('app_settings').update({ val_text: moVal }).eq('key_name', 'audio_mode'), supabase.from('app_settings').update({ val_text: urVal }).eq('key_name', 'audio_custom_url')];
+        const promises = [
+          supabase.from('app_settings').update({ val_text: moVal }).eq('key_name', 'audio_mode'),
+          supabase.from('app_settings').update({ val_text: ttsVal }).eq('key_name', 'audio_tts_template'),
+          supabase.from('app_settings').update({ val_text: urVal }).eq('key_name', 'audio_custom_url'),
+        ];
 
         const results = await Promise.all(promises);
         results.forEach((r) => {
           if (r.error) throw r.error;
         });
 
-        alert('Pengaturan Profil Suara Panggilan berhasil diterapkan ke Seluruh Sistem!');
+        alert('Pengaturan Profil Suara Panggilan berhasil diterapkan!');
       } catch (e) {
         alert('Gagal menyimpan profil suara: ' + e.message);
       } finally {
@@ -1391,4 +1517,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Call initialization for storage selections
+  fetchStorageMedia('media', 'video', 'select-vid-storage');
+  fetchStorageMedia('media', 'audio', 'select-audio-storage');
 });
