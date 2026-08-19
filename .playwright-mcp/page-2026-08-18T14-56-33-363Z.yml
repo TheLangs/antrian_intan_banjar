@@ -1,0 +1,145 @@
+- generic [active] [ref=f5e1]:
+  - complementary [ref=f5e2]:
+    - generic [ref=f5e3]:
+      - img "Logo Intan Banjar" [ref=f5e4]
+      - generic [ref=f5e5]:
+        - paragraph [ref=f5e6]: PT Air Minum
+        - paragraph [ref=f5e7]: Intan Banjar (Perseroda)
+    - navigation [ref=f5e8]:
+      - generic [ref=f5e9]:
+        - heading "Monitoring & Operasional" [level=3] [ref=f5e10]
+        - generic [ref=f5e11]:
+          - button "Live Operations & Queue Hub" [ref=f5e12] [cursor=pointer]
+          - button "Live Display & Announcement" [ref=f5e15] [cursor=pointer]
+          - button "Loket & Session Manager" [ref=f5e18] [cursor=pointer]
+      - generic [ref=f5e21]:
+        - heading "Analitik & Kinerja" [level=3] [ref=f5e22]
+        - generic [ref=f5e23]:
+          - button "Evaluasi & Kinerja Kasir" [ref=f5e24] [cursor=pointer]
+          - button "Beban & Analisis Jam Sibuk" [ref=f5e27] [cursor=pointer]
+          - button "Saluran & Penetrasi Digital" [ref=f5e30] [cursor=pointer]
+      - generic [ref=f5e33]:
+        - heading "Riwayat Sistem" [level=3] [ref=f5e34]
+        - generic [ref=f5e35]:
+          - button "Riwayat Transaksi & Log" [ref=f5e36] [cursor=pointer]
+          - button "Audit Trail & Aktivitas" [ref=f5e39] [cursor=pointer]
+    - generic [ref=f5e42]:
+      - button "Panduan Pengguna" [ref=f5e43] [cursor=pointer]
+      - button "Pengaturan Umum" [ref=f5e46] [cursor=pointer]
+      - button "Keluar (Logout)" [ref=f5e50] [cursor=pointer]
+  - main [ref=f5e53]:
+    - generic [ref=f5e54]:
+      - generic [ref=f5e55]:
+        - generic [ref=f5e56]: Intan Banjar
+        - generic [ref=f5e57]: "|"
+        - generic [ref=f5e58]: Selasa, 18 Agustus 2026 - 22.56.32
+      - generic [ref=f5e59]: Aktif
+    - generic [ref=f5e65]:
+      - generic [ref=f5e66]:
+        - generic [ref=f5e67]:
+          - heading "Ringkasan Eksekutif" [level=2] [ref=f5e68]
+          - paragraph [ref=f5e69]: Ikhtisar performa keseluruhan sistem antrean hari ini.
+        - generic [ref=f5e70]:
+          - textbox [ref=f5e71]: 2026-08-18
+          - button "Export Ringkasan (PDF)" [ref=f5e72] [cursor=pointer]
+      - generic [ref=f5e75]:
+        - generic [ref=f5e76]:
+          - generic [ref=f5e78]:
+            - generic [ref=f5e79]:
+              - heading [level=3] [ref=f5e80]
+              - paragraph [ref=f5e83]: Offline / Kosong
+            - generic [ref=f5e84]: Offline
+          - generic [ref=f5e85]:
+            - generic [ref=f5e86]:
+              - paragraph [ref=f5e87]: Berjalan
+              - paragraph [ref=f5e88]: "-"
+            - generic [ref=f5e89]:
+              - paragraph [ref=f5e90]: Total Layan
+              - paragraph [ref=f5e91]: "2"
+        - generic [ref=f5e92]:
+          - generic [ref=f5e94]:
+            - generic [ref=f5e95]:
+              - heading [level=3] [ref=f5e96]
+              - paragraph [ref=f5e99]: Offline / Kosong
+            - generic [ref=f5e100]: Offline
+          - generic [ref=f5e101]:
+            - generic [ref=f5e102]:
+              - paragraph [ref=f5e103]: Berjalan
+              - paragraph [ref=f5e104]: "-"
+            - generic [ref=f5e105]:
+              - paragraph [ref=f5e106]: Total Layan
+              - paragraph [ref=f5e107]: "0"
+        - generic [ref=f5e108]:
+          - generic [ref=f5e110]:
+            - generic [ref=f5e111]:
+              - heading [level=3] [ref=f5e112]
+              - paragraph [ref=f5e115]: Offline / Kosong
+            - generic [ref=f5e116]: Offline
+          - generic [ref=f5e117]:
+            - generic [ref=f5e118]:
+              - paragraph [ref=f5e119]: Berjalan
+              - paragraph [ref=f5e120]: "-"
+            - generic [ref=f5e121]:
+              - paragraph [ref=f5e122]: Total Layan
+              - paragraph [ref=f5e123]: "0"
+      - generic [ref=f5e124]:
+        - generic [ref=f5e125]:
+          - generic [ref=f5e126]: 12%
+          - paragraph [ref=f5e133]: Total Antrean
+          - paragraph [ref=f5e134]:
+            - generic [ref=f5e135]: "2"
+            - generic [ref=f5e136]: Tiket
+        - generic [ref=f5e137]:
+          - paragraph [ref=f5e142]: Success Rate
+          - paragraph [ref=f5e143]: 50%
+          - paragraph [ref=f5e144]: 1 Selesai, 1 Terlewat
+        - generic [ref=f5e145]:
+          - generic [ref=f5e146]: 2.1m
+          - paragraph [ref=f5e153]: Avg Wait Time
+          - paragraph [ref=f5e154]:
+            - generic [ref=f5e155]: 1m 7s
+        - generic [ref=f5e156]:
+          - generic [ref=f5e157]: Target < 05:00
+          - paragraph [ref=f5e162]: Avg Service Time
+          - paragraph [ref=f5e163]:
+            - generic [ref=f5e164]: 0m 0s
+      - generic [ref=f5e165]:
+        - generic [ref=f5e166]:
+          - generic [ref=f5e167]:
+            - heading "Distribusi Jam Kedatangan" [level=4] [ref=f5e168]
+            - button [ref=f5e169] [cursor=pointer]
+          - generic [ref=f5e172]:
+            - generic [ref=f5e173]: 0 Tiket
+            - generic [ref=f5e174]: 0 Tiket
+            - generic [ref=f5e175]: 0 Tiket
+            - generic [ref=f5e176]: 2 Tiket
+            - generic [ref=f5e178]: 0 Tiket
+            - generic [ref=f5e179]: 0 Tiket
+            - generic [ref=f5e180]: 0 Tiket
+            - generic [ref=f5e181]: 0 Tiket
+          - generic [ref=f5e182]:
+            - generic [ref=f5e183]: 08:00
+            - generic [ref=f5e184]: 09:00
+            - generic [ref=f5e185]: 10:00
+            - generic [ref=f5e186]: 11:00
+            - generic [ref=f5e187]: 12:00
+            - generic [ref=f5e188]: 13:00
+            - generic [ref=f5e189]: 14:00
+            - generic [ref=f5e190]: 15:00
+        - generic [ref=f5e191]:
+          - heading "Recent Queue Events" [level=4] [ref=f5e193]
+          - table [ref=f5e195]:
+            - rowgroup [ref=f5e196]:
+              - row [ref=f5e197]:
+                - columnheader "Tiket" [ref=f5e198]
+                - columnheader "Detail" [ref=f5e199]
+                - columnheader "Status" [ref=f5e200]
+            - rowgroup [ref=f5e201]:
+              - row [ref=f5e202]:
+                - cell "A-002" [ref=f5e203]
+                - cell "Loket 1 - gilang" [ref=f5e204]
+                - cell "selesai" [ref=f5e205]
+              - row [ref=f5e206]:
+                - cell "A-001" [ref=f5e207]
+                - cell "Loket 1 - gilang" [ref=f5e208]
+                - cell "terlewat" [ref=f5e209]

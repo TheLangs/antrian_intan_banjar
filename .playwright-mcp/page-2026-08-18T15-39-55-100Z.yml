@@ -1,0 +1,66 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - generic [ref=e3]:
+      - img "Logo Intan Banjar" [ref=e4]
+      - generic [ref=e5]:
+        - paragraph [ref=e6]: PT Air Minum
+        - paragraph [ref=e7]: Intan Banjar (Perseroda)
+    - navigation [ref=e8]:
+      - generic [ref=e9]:
+        - heading "Monitoring & Operasional" [level=3] [ref=e10]
+        - generic [ref=e11]:
+          - button "Live Operations & Queue Hub" [ref=e12] [cursor=pointer]
+          - button "Live Display & Announcement" [ref=e15] [cursor=pointer]
+          - button "Loket & Session Manager" [ref=e18] [cursor=pointer]
+      - generic [ref=e21]:
+        - heading "Analitik & Kinerja" [level=3] [ref=e22]
+        - generic [ref=e23]:
+          - button "Evaluasi & Kinerja Kasir" [ref=e24] [cursor=pointer]
+          - button "Beban & Analisis Jam Sibuk" [ref=e27] [cursor=pointer]
+          - button "Saluran & Penetrasi Digital" [ref=e30] [cursor=pointer]
+      - generic [ref=e33]:
+        - heading "Riwayat Sistem" [level=3] [ref=e34]
+        - generic [ref=e35]:
+          - button "Riwayat Transaksi & Log" [ref=e36] [cursor=pointer]
+          - button "Audit Trail & Aktivitas" [ref=e39] [cursor=pointer]
+    - generic [ref=e42]:
+      - button "Panduan Pengguna" [ref=e43] [cursor=pointer]
+      - button "Pengaturan Umum" [ref=e46] [cursor=pointer]
+      - button "Keluar (Logout)" [ref=e50] [cursor=pointer]
+  - main [ref=e53]:
+    - generic [ref=e54]:
+      - generic [ref=e55]:
+        - generic [ref=e56]: Intan Banjar
+        - generic [ref=e57]: "|"
+      - generic [ref=e58]: Aktif
+    - generic [ref=e145]:
+      - generic [ref=e146]:
+        - generic [ref=e147]:
+          - heading "Produktivitas Kasir" [level=2] [ref=e148]
+          - paragraph [ref=e149]: Performa, durasi layanan, dan rekap per petugas.
+        - generic [ref=e150]:
+          - textbox "Cari nama kasir..." [ref=e152]
+          - textbox [ref=e153]: 2026-08-18
+          - combobox [ref=e154]:
+            - option "Semua Kasir" [selected]
+            - option "gilang"
+          - button "Export Kasir (PDF)" [ref=e155] [cursor=pointer]
+      - table [ref=e160]:
+        - rowgroup [ref=e161]:
+          - row [ref=e162]:
+            - columnheader "Petugas" [ref=e163]
+            - columnheader "Loket" [ref=e164]
+            - columnheader "Total Layanan" [ref=e165]
+            - columnheader "Selesai" [ref=e166]
+            - columnheader "Terlewat" [ref=e167]
+            - columnheader "Avg Tunggu" [ref=e168]
+            - columnheader "Avg Layanan" [ref=e169]
+        - rowgroup [ref=e170]:
+          - row [ref=e171]:
+            - cell "gilang" [ref=e172]
+            - cell "Loket 1" [ref=e173]
+            - cell "2" [ref=e174]
+            - cell "1" [ref=e175]
+            - cell "1" [ref=e176]
+            - cell "1m 7s" [ref=e177]
+            - cell "0m 13s" [ref=e178]

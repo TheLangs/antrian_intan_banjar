@@ -1,0 +1,135 @@
+- generic [active] [ref=f7e1]:
+  - complementary [ref=f7e2]:
+    - generic [ref=f7e3]:
+      - img "Logo Intan Banjar" [ref=f7e4]
+      - generic [ref=f7e5]:
+        - paragraph [ref=f7e6]: PT Air Minum
+        - paragraph [ref=f7e7]: Intan Banjar (Perseroda)
+    - navigation [ref=f7e8]:
+      - generic [ref=f7e9]:
+        - heading "Monitoring & Operasional" [level=3] [ref=f7e10]
+        - generic [ref=f7e11]:
+          - button "Live Operations & Queue Hub" [ref=f7e12] [cursor=pointer]
+          - button "Live Display & Announcement" [ref=f7e15] [cursor=pointer]
+          - button "Loket & Session Manager" [ref=f7e18] [cursor=pointer]
+      - generic [ref=f7e21]:
+        - heading "Analitik & Kinerja" [level=3] [ref=f7e22]
+        - generic [ref=f7e23]:
+          - button "Evaluasi & Kinerja Kasir" [ref=f7e24] [cursor=pointer]
+          - button "Beban & Analisis Jam Sibuk" [ref=f7e27] [cursor=pointer]
+          - button "Saluran & Penetrasi Digital" [ref=f7e30] [cursor=pointer]
+      - generic [ref=f7e33]:
+        - heading "Riwayat Sistem" [level=3] [ref=f7e34]
+        - generic [ref=f7e35]:
+          - button "Riwayat Transaksi & Log" [ref=f7e36] [cursor=pointer]
+          - button "Audit Trail & Aktivitas" [ref=f7e39] [cursor=pointer]
+    - generic [ref=f7e42]:
+      - button "Panduan Pengguna" [ref=f7e43] [cursor=pointer]
+      - button "Pengaturan Umum" [ref=f7e46] [cursor=pointer]
+      - button "Keluar (Logout)" [ref=f7e50] [cursor=pointer]
+  - main [ref=f7e53]:
+    - generic [ref=f7e54]:
+      - generic [ref=f7e55]:
+        - generic [ref=f7e56]: Intan Banjar
+        - generic [ref=f7e57]: "|"
+      - generic [ref=f7e58]: Aktif
+    - generic [ref=f7e64]:
+      - generic [ref=f7e65]:
+        - generic [ref=f7e66]:
+          - heading "Ringkasan Eksekutif" [level=2] [ref=f7e67]
+          - paragraph [ref=f7e68]: Ikhtisar performa keseluruhan sistem antrean hari ini.
+        - generic [ref=f7e69]:
+          - textbox [ref=f7e70]: 2026-08-18
+          - button "Export Ringkasan (PDF)" [ref=f7e71] [cursor=pointer]
+      - generic [ref=f7e74]:
+        - generic [ref=f7e75]:
+          - generic [ref=f7e77]:
+            - generic [ref=f7e78]:
+              - heading [level=3] [ref=f7e79]
+              - paragraph [ref=f7e82]: Offline / Kosong
+            - generic [ref=f7e83]: Offline
+          - generic [ref=f7e84]:
+            - generic [ref=f7e85]:
+              - paragraph [ref=f7e86]: Berjalan
+              - paragraph [ref=f7e87]: "-"
+            - generic [ref=f7e88]:
+              - paragraph [ref=f7e89]: Total Layan
+              - paragraph [ref=f7e90]: "2"
+        - generic [ref=f7e91]:
+          - generic [ref=f7e93]:
+            - generic [ref=f7e94]:
+              - heading [level=3] [ref=f7e95]
+              - paragraph [ref=f7e98]: Offline / Kosong
+            - generic [ref=f7e99]: Offline
+          - generic [ref=f7e100]:
+            - generic [ref=f7e101]:
+              - paragraph [ref=f7e102]: Berjalan
+              - paragraph [ref=f7e103]: "-"
+            - generic [ref=f7e104]:
+              - paragraph [ref=f7e105]: Total Layan
+              - paragraph [ref=f7e106]: "0"
+        - generic [ref=f7e107]:
+          - generic [ref=f7e109]:
+            - generic [ref=f7e110]:
+              - heading [level=3] [ref=f7e111]
+              - paragraph [ref=f7e114]: Offline / Kosong
+            - generic [ref=f7e115]: Offline
+          - generic [ref=f7e116]:
+            - generic [ref=f7e117]:
+              - paragraph [ref=f7e118]: Berjalan
+              - paragraph [ref=f7e119]: "-"
+            - generic [ref=f7e120]:
+              - paragraph [ref=f7e121]: Total Layan
+              - paragraph [ref=f7e122]: "0"
+      - generic [ref=f7e123]:
+        - generic [ref=f7e124]:
+          - generic [ref=f7e125]: 12%
+          - paragraph [ref=f7e132]: Total Antrean
+          - paragraph [ref=f7e133]:
+            - generic [ref=f7e134]: "2"
+            - generic [ref=f7e135]: Tiket
+        - generic [ref=f7e136]:
+          - paragraph [ref=f7e141]: Success Rate
+          - paragraph [ref=f7e142]: 50%
+          - paragraph [ref=f7e143]: 1 Selesai, 1 Terlewat
+        - generic [ref=f7e144]:
+          - generic [ref=f7e145]: 2.1m
+          - paragraph [ref=f7e152]: Avg Wait Time
+          - paragraph [ref=f7e153]:
+            - generic [ref=f7e154]: 1m 7s
+        - generic [ref=f7e155]:
+          - generic [ref=f7e156]: Target < 05:00
+          - paragraph [ref=f7e161]: Avg Service Time
+          - paragraph [ref=f7e162]:
+            - generic [ref=f7e163]: 0m 0s
+      - generic [ref=f7e164]:
+        - generic [ref=f7e165]:
+          - generic [ref=f7e166]:
+            - heading "Distribusi Jam Kedatangan" [level=4] [ref=f7e167]
+            - button [ref=f7e168] [cursor=pointer]
+          - generic [ref=f7e172]:
+            - generic [ref=f7e173]: 08:00
+            - generic [ref=f7e174]: 09:00
+            - generic [ref=f7e175]: 10:00
+            - generic [ref=f7e176]: 11:00
+            - generic [ref=f7e177]: 12:00
+            - generic [ref=f7e178]: 13:00
+            - generic [ref=f7e179]: 14:00
+            - generic [ref=f7e180]: 15:00
+        - generic [ref=f7e181]:
+          - heading "Recent Queue Events" [level=4] [ref=f7e183]
+          - table [ref=f7e185]:
+            - rowgroup [ref=f7e186]:
+              - row [ref=f7e187]:
+                - columnheader "Tiket" [ref=f7e188]
+                - columnheader "Detail" [ref=f7e189]
+                - columnheader "Status" [ref=f7e190]
+            - rowgroup [ref=f7e191]:
+              - row [ref=f7e192]:
+                - cell "A-002" [ref=f7e193]
+                - cell "Loket 1 - gilang" [ref=f7e194]
+                - cell "selesai" [ref=f7e195]
+              - row [ref=f7e196]:
+                - cell "A-001" [ref=f7e197]
+                - cell "Loket 1 - gilang" [ref=f7e198]
+                - cell "terlewat" [ref=f7e199]
