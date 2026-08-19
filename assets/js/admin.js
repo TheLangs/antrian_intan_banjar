@@ -30,21 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentReportData = [];
 
-  // Set default dates (Today) for ALL date pickers across different tabs
+  // Set default dates (Today) on initialization
   const today = new Date();
   const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-  document.querySelectorAll('input[type="date"]').forEach((inp) => {
-    inp.value = localToday;
-    inp.addEventListener('change', (e) => {
-      const v = e.target.value;
-      if (v) {
-        document.querySelectorAll('input[type="date"]').forEach((other) => {
-          if (other !== e.target) other.value = v;
-        });
-      }
-      fetchData();
-    });
-  });
+  if (inpStart) inpStart.value = localToday;
+  if (inpEnd) inpEnd.value = localToday;
 
   // Events
   if (btnFilter) btnFilter.addEventListener('click', fetchData);
@@ -84,7 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = 'admin_login.html';
     });
   if (btnExport) btnExport.addEventListener('click', generatePDF);
-  if (inpStart) inpStart.addEventListener('change', fetchData);
 
   // Sidebar Tabs Logic
   const navItems = document.querySelectorAll('.nav-item[data-tab]');
