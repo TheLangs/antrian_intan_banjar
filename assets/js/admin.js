@@ -870,7 +870,49 @@ function formatSec(seconds) {
      ANALYTICS & KPI RENDERERS 
      ------------------------------------------------------------- */
 
-  function renderKasirAnalytics(data) {
+  
+  function renderOverviewTrafficBars(data) {
+    const miniBars = document.getElementById("ov-mini-bars");
+    if (!miniBars) return;
+
+    let hours = [8, 9, 10, 11, 12, 13, 14, 15];
+    let tMap = {};
+    hours.forEach(h => { tMap[h] = 0; });
+    let maxVol = 0;
+
+    data.forEach((x) => {
+      let h = new Date(x.waktu_ambil).getHours();
+      if (h < 8) h = 8;
+      if (h > 15) h = 15;
+      
+      if (tMap[h] !== undefined) {
+         tMap[h]++;
+         if (tMap[h] > maxVol) maxVol = tMap[h];
+      }
+    });
+
+    miniBars.innerHTML = "";
+    
+    hours.forEach(h => {
+      let vol = tMap[h];
+      let pct = maxVol > 0 ? (vol / maxVol) * 100 : 0;
+      let barHtml = `
+          <div class="relative flex flex-col justify-end w-full h-full group pb-1">
+            <div class="w-full bg-gradient-to-t ${pct > 0 ? "from-accent to-blue-400" : "from-slate-100 to-slate-50"} shadow-sm hover:brightness-110 hover:shadow-md transition-all duration-300 rounded-t-lg relative z-10" style="height: ${pct}%; min-height: ${pct > 0 ? "6px" : "0"}">
+              <div class="absolute -top-9 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[11px] font-bold px-3 py-1.5 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 whitespace-nowrap">
+                ${vol} Tiket
+                <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
+              </div>
+              ${pct > 0 ? "<div class=\"absolute inset-x-0 top-0 h-1 bg-white/30 rounded-t-lg\"></div>" : ""}
+            </div>
+          </div>
+       `;
+      miniBars.innerHTML += barHtml;
+    });
+  }
+
+
+function renderKasirAnalytics(data) {
     const tbody = document.getElementById('ks-tbody');
     const emptyMsg = document.getElementById('ks-empty');
     if (!tbody || !emptyMsg) return;
