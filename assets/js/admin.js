@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // UI elements
   const inpStart = document.getElementById('ov-date');
-  const inpEnd = document.getElementById('ov-date'); // Bento uses single date for overview
+  const inpEnd = document.getElementById('ov-date-end');
   const btnFilter = document.getElementById('btn-filter') || document.createElement('button'); // Fallback if no filter button
   const btnExport = document.querySelector('[data-export="overview"]') || document.createElement('button');
   const btnLogout = document.getElementById('btn-logout') || document.querySelector('[id="btn-logout"]');
@@ -141,7 +141,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (inpStart && inpStart.value) {
         const p = inpStart.value.split('-');
         startD = new Date(p[0], p[1] - 1, p[2], 0, 0, 0).toISOString();
+      }
+      if (inpEnd && inpEnd.value) {
+        const p = inpEnd.value.split('-');
         endD = new Date(p[0], p[1] - 1, p[2], 23, 59, 59, 999).toISOString();
+      } else {
+        // If no end date, use start date + 1 day threshold if needed, but default behavior is start date end-of-day
+        if (inpStart && inpStart.value) {
+          const p = inpStart.value.split('-');
+          endD = new Date(p[0], p[1] - 1, p[2], 23, 59, 59, 999).toISOString();
+        }
       }
 
       const [resAntrian, resLoket] = await Promise.all([
@@ -177,7 +186,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (inpStart && inpStart.value) {
         const p = inpStart.value.split('-');
         startD = new Date(p[0], p[1] - 1, p[2], 0, 0, 0).toISOString();
+      }
+      if (inpEnd && inpEnd.value) {
+        const p = inpEnd.value.split('-');
         endD = new Date(p[0], p[1] - 1, p[2], 23, 59, 59, 999).toISOString();
+      } else {
+        if (inpStart && inpStart.value) {
+          const p = inpStart.value.split('-');
+          endD = new Date(p[0], p[1] - 1, p[2], 23, 59, 59, 999).toISOString();
+        }
       }
 
       const [resAntrian, resLoket] = await Promise.all([
@@ -263,6 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return matchSearch && matchStatus && matchLoket;
     });
 
+    window.filteredHistoryData = filteredData;
     let cntTotal = filteredData.length;
     let cntSelesai = 0;
     let cntTerlewat = 0;
@@ -392,11 +410,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const clickedBtn = e && e.currentTarget ? e.currentTarget : btnExport;
     const exportType = clickedBtn.getAttribute('data-export') || 'overview';
 
+    let dataToExport = currentReportData;
+    if (exportType === 'history' || exportType === 'overview') dataToExport = window.filteredHistoryData || currentReportData;
+    if (exportType === 'kasir') dataToExport = window.filteredKasirData || currentReportData;
+
     // Check if it's the history CSV export
     if (exportType === 'history') {
       try {
         let scsv = 'ID,Nomor,Platform,Status,Loket,Petugas,Ambil,Panggil,Selesai\n';
-        currentReportData.forEach((item) => {
+        dataToExport.forEach((item) => {
           const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
           scsv += `"${item.id_antrian}","${noLengkap}","${item.metode_tiket || ''}","${item.status || ''}","${item.loket?.nama_loket || ''}","${item.nama_petugas || ''}","${item.waktu_ambil || ''}","${item.waktu_panggil || ''}","${item.waktu_selesai || ''}"\n`;
         });
@@ -457,7 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sTerlewat = 0,
         sSumW = 0,
         sCntW = 0;
-      currentReportData.forEach((d) => {
+      dataToExport.forEach((d) => {
         if (d.status === 'selesai') sSelesai++;
         if (d.status === 'terlewat') sTerlewat++;
         if (d.waktu_panggil) {
@@ -469,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
       let sWait = sCntW > 0 ? formatSec(sSumW / sCntW) : '0m 0s';
-      let sTtl = currentReportData.length;
+      let sTtl = dataToExport.length;
 
       doc.text(`TOTAL TIKET: ${sTtl}`, 20, 52);
       doc.text(`SELESAI: ${sSelesai} (${sTtl > 0 ? Math.round((sSelesai / sTtl) * 100) : 0}%)`, 80, 52);
@@ -483,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (exportType === 'kasir') {
         tableColumn = ['Kasir / Petugas', 'Total Diambil', 'Sukses Dilayani', 'Terlewat', 'Wt. Tunggu (Rata-rata)', 'Wt. Layan (Rata-rata)'];
         let dict = {};
-        currentReportData.forEach((d) => {
+        dataToExport.forEach((d) => {
           let petugas = d.nama_petugas || 'Tanpa Petugas';
           let loket = d.loket?.nama_loket || 'Tanpa Loket';
           let nm = petugas + ' (' + loket + ')';
@@ -516,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (exportType === 'traffic') {
         tableColumn = ['Jam/Waktu (WIT)', 'Volume Masuk', 'Sukses Dilayani', 'Rata-rata Wt. Tunggu'];
         let dict = {};
-        currentReportData.forEach((d) => {
+        dataToExport.forEach((d) => {
           let h = new Date(d.waktu_ambil).getHours();
           if (isNaN(h)) return;
           let label = `${String(h).padStart(2, '0')}:00 - ${String(h + 1).padStart(2, '0')}:00`;
@@ -542,7 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (exportType === 'digital') {
         tableColumn = ['Saluran Tiket', 'Total Pengambilan', 'Persentase', 'Rata-rata Wt. Tunggu'];
         let dict = {};
-        currentReportData.forEach((d) => {
+        dataToExport.forEach((d) => {
           let isScanned = d.metode_tiket === 'qrcode' || d.metode_tiket === 'scan';
           let nm = isScanned ? 'ONLINE APP / QR CODE' : 'OFFLINE KIOSK / MENDATANGI';
 
@@ -565,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         // default Overview
         tableColumn = ['ID', 'Nomor', 'Platform', 'Status', 'Loket', 'Petugas', 'Pukul Ambil', 'Pukul Panggil', 'Pukul Selesai', 'Wt. Tunggu', 'Wt. Layan'];
-        currentReportData.forEach((item) => {
+        dataToExport.forEach((item) => {
           let waitTimeStr = '-';
           let svcTimeStr = '-';
 
