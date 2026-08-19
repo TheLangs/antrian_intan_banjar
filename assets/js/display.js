@@ -36,18 +36,19 @@ document.addEventListener('DOMContentLoaded', () => {
       data.forEach((loket) => {
         const id = loket.id_loket;
         const card = document.createElement('div');
-        card.className = 'bg-white rounded-2xl shadow border border-slate-200 flex flex-col overflow-hidden h-full relative transform transition-all duration-300';
+        card.className = 'bg-white rounded-3xl shadow-lg border border-slate-200 flex flex-col overflow-hidden h-full relative transform transition-all duration-300';
         card.id = `card-loket-${id}`;
         card.innerHTML = `
-          <div class="bg-blue-800 text-white text-center py-2 transition-colors duration-300">
-             <h2 class="text-lg font-bold">${loket.nama_loket.toUpperCase()}</h2>
+          <div class="bg-blue-800 text-white text-center py-4 transition-colors duration-300 z-10 shadow-sm border-b-4 border-sky-600">
+             <h2 class="text-3xl font-extrabold tracking-widest">${loket.nama_loket.toUpperCase()}</h2>
           </div>
-          <div class="flex-grow flex flex-col items-center justify-center bg-slate-50 relative pb-4">
-             <div class="text-[55px] font-black text-slate-800 leading-none tracking-tighter" id="disp-no-${id}">---</div>
+          <div class="flex-grow flex flex-col items-center justify-center bg-sky-50 relative pb-4">
+             <span class="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-1">Nomor Antrean</span>
+             <div class="text-[90px] xl:text-[110px] font-black text-slate-800 leading-none tracking-tighter drop-shadow-sm" id="disp-no-${id}">---</div>
           </div>
-          <div class="absolute bottom-0 w-full bg-slate-100 py-1.5 px-3 border-t border-slate-200 flex justify-between">
-             <span class="text-xs text-slate-500">Petugas:</span>
-             <span class="text-xs font-bold text-slate-800" id="disp-nama-${id}">-</span>
+          <div class="absolute bottom-0 w-full bg-slate-100 py-2.5 px-5 border-t border-slate-200 flex items-center justify-between shadow-inner rounded-b-3xl">
+             <span class="text-sm font-semibold text-slate-500 uppercase">Petugas:</span>
+             <span class="text-base font-black text-blue-800 uppercase tracking-widest" id="disp-nama-${id}">-</span>
           </div>
         `;
         displayGrid.appendChild(card);

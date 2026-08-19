@@ -23,37 +23,36 @@
       </div>
     </header>
 
-    <!-- Main Bento Grid Layout (Top Lokets, Center Media, Right Sidebar History) -->
-    <main class="flex-grow grid grid-cols-12 gap-6 p-6 h-full overflow-hidden">
+    <!-- Main Bento Grid Layout -->
+    <main class="flex-grow grid grid-cols-12 gap-6 p-6 min-h-0">
       <!-- Left Column: Lokets & Media -->
-      <section class="col-span-8 flex flex-col gap-6 h-[calc(100vh-180px)]">
+      <section class="col-span-8 flex flex-col gap-6 h-full min-h-0">
         <!-- Top Lockers -->
-        <div id="display-grid-top" class="grid grid-cols-1 md:grid-cols-3 gap-6 h-48 shrink-0">
+        <div id="display-grid-top" class="grid grid-cols-1 md:grid-cols-3 gap-6 h-[55%] shrink-0">
           <!-- Dynamically injected via JS -->
         </div>
 
         <!-- Media Player Container -->
-        <div id="media-container" class="bg-slate-900 rounded-[2rem] shadow-2xl flex-grow overflow-hidden relative border border-slate-300 flex items-center justify-center">
-          <!-- Video element will be injected here via JS based on options -->
-          <p class="text-slate-500 font-bold tracking-widest text-xl opacity-50">Menunggu Sinyal Media...</p>
+        <div id="media-container" class="bg-black rounded-3xl shadow-2xl flex-grow overflow-hidden relative flex items-center justify-center">
+          <p class="text-slate-500 font-bold tracking-widest text-lg opacity-50">Menunggu Sinyal Media...</p>
         </div>
       </section>
 
       <!-- Right Column: Queue History Sidebar -->
-      <aside class="col-span-4 bg-white rounded-[2rem] shadow-xl flex flex-col overflow-hidden border border-slate-200 h-[calc(100vh-180px)]">
-        <div class="bg-blue-800 text-white p-6 shadow-sm z-10 shrink-0 text-center">
+      <aside class="col-span-4 bg-white rounded-3xl shadow-xl flex flex-col overflow-hidden border border-slate-200 h-full min-h-0">
+        <div class="bg-blue-800 text-white p-5 shadow-md z-10 shrink-0 text-center flex items-center justify-center">
           <h3 class="text-2xl font-black tracking-widest uppercase">Baru Saja Dipanggil</h3>
         </div>
-        <div id="queue-history-list" class="flex-grow overflow-y-hidden relative p-4 flex flex-col gap-3 bg-slate-50/50">
+        <div id="queue-history-list" class="flex-grow overflow-y-hidden relative p-4 flex flex-col gap-3 bg-sky-50 shadow-inner rounded-b-3xl">
           <!-- Activity list dynamically stacked via JS -->
         </div>
       </aside>
     </main>
 
     <!-- Footer Running Text -->
-    <footer class="bg-blue-900 border-t border-blue-950 shrink-0 shadow-inner overflow-hidden flex items-center py-4 px-6 z-10 w-full relative">
-      <span class="bg-amber-500 text-amber-950 px-4 py-1.5 rounded-lg text-lg font-bold shadow-sm z-20">PENGUMUMAN</span>
-      <div class="flex-grow flex items-center ml-4 mt-2 overflow-hidden w-full h-[32px] relative z-0">
+    <footer class="bg-blue-900 border-t border-blue-950 shrink-0 shadow-inner overflow-hidden flex items-center py-3 px-6 z-10 w-full relative h-[64px]">
+      <span class="bg-amber-500 text-amber-950 px-4 py-1.5 rounded-lg text-lg font-bold shadow-sm z-20 shrink-0">PENGUMUMAN</span>
+      <div class="flex-grow flex items-center ml-6 overflow-hidden w-full h-full relative z-0">
         <div id="tv-marquee" class="animate-[marquee_25s_linear_infinite] whitespace-nowrap text-blue-100 text-2xl font-medium tracking-wide absolute">
           Selamat Datang di PT Air Minum Intan Banjar (Perseroda). Harap siapkan nomor antrean Anda. Pelayanan loket dimulai dari pukul 08:00 hingga 15:00. Mohon menunggu dengan tertib di area yang telah disediakan.
         </div>
