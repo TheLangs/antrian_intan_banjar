@@ -36,19 +36,19 @@ document.addEventListener('DOMContentLoaded', () => {
       data.forEach((loket) => {
         const id = loket.id_loket;
         const card = document.createElement('div');
-        card.className = 'bg-white rounded-3xl shadow-lg border border-slate-200 flex flex-col overflow-hidden h-full relative transform transition-all duration-300';
+        card.className = 'bg-white rounded-2xl shadow-md border border-slate-200 flex flex-col overflow-hidden h-full relative transform transition-all duration-300';
         card.id = `card-loket-${id}`;
         card.innerHTML = `
-          <div class="bg-blue-800 text-white text-center py-4 transition-colors duration-300 z-10 shadow-sm border-b-4 border-sky-600">
-             <h2 class="text-3xl font-extrabold tracking-widest">${loket.nama_loket.toUpperCase()}</h2>
+          <div class="bg-blue-900 text-white text-center py-4 transition-colors duration-300 z-10">
+             <h2 class="text-4xl font-extrabold tracking-widest">${loket.nama_loket.toUpperCase()}</h2>
           </div>
-          <div class="flex-grow flex flex-col items-center justify-center bg-sky-50 relative pb-4">
-             <span class="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-1">Nomor Antrean</span>
-             <div class="text-[90px] xl:text-[110px] font-black text-slate-800 leading-none tracking-tighter drop-shadow-sm" id="disp-no-${id}">---</div>
+          <div class="flex-grow flex flex-col items-center justify-center bg-white relative pb-6 pt-4">
+             <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Nomor Antrean</span>
+             <div class="text-[100px] xl:text-[140px] font-black text-slate-900 leading-none tracking-tighter" id="disp-no-${id}">---</div>
           </div>
-          <div class="absolute bottom-0 w-full bg-slate-100 py-2.5 px-5 border-t border-slate-200 flex items-center justify-between shadow-inner rounded-b-3xl">
-             <span class="text-sm font-semibold text-slate-500 uppercase">Petugas:</span>
-             <span class="text-base font-black text-blue-800 uppercase tracking-widest" id="disp-nama-${id}">-</span>
+          <div class="absolute bottom-0 w-full bg-slate-50 py-3 px-6 border-t border-slate-200 flex items-center justify-between">
+             <span class="text-sm font-bold text-slate-500 uppercase">Petugas:</span>
+             <span class="text-base font-black text-blue-900 uppercase tracking-widest" id="disp-nama-${id}">-</span>
           </div>
         `;
         displayGrid.appendChild(card);
@@ -190,11 +190,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Tailwind highlight classes
     card.classList.add('ring-8', 'ring-amber-500', 'animate-pulse', 'scale-105', 'z-50');
-    card.querySelector('.bg-blue-800').classList.replace('bg-blue-800', 'bg-amber-500');
+    card.querySelector('.bg-blue-900').classList.replace('bg-blue-900', 'bg-amber-500');
+    card.querySelector('.text-white').classList.replace('text-white', 'text-slate-900');
 
     setTimeout(() => {
       card.classList.remove('ring-8', 'ring-amber-500', 'animate-pulse', 'scale-105', 'z-50');
-      card.querySelector('.bg-amber-500').classList.replace('bg-amber-500', 'bg-blue-800');
+      card.querySelector('.bg-amber-500').classList.replace('bg-amber-500', 'bg-blue-900');
+      card.querySelector('.text-slate-900').classList.replace('text-slate-900', 'text-white');
     }, 8000);
   }
 
@@ -331,15 +333,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
     const el = document.createElement('div');
-    el.className = 'bg-white p-4 rounded-[1rem] border border-slate-200 shadow-sm flex items-center justify-between shrink-0 transform transition-all duration-500 opacity-0 -translate-y-4';
+    el.className = 'bg-white p-5 rounded-2xl shadow-sm border border-slate-200 border-l-[6px] border-l-amber-500 flex items-center justify-between shrink-0 transform transition-all duration-500 opacity-0 -translate-y-4';
     el.innerHTML = `
       <div>
-         <span class="text-[10px] font-bold text-slate-400 block tracking-widest">${timeStr}</span>
-         <span class="text-2xl font-black text-blue-900 leading-none">${nomorLengkap}</span>
+         <span class="text-[12px] font-bold text-slate-500 block tracking-widest mb-1">${timeStr}</span>
+         <span class="text-3xl font-black text-slate-900 leading-none tracking-tighter">${nomorLengkap}</span>
       </div>
-      <div class="text-right">
-         <span class="text-[10px] font-bold text-slate-400 block break-words lg:max-w-[100px] max-w-[80px]">${namaPetugas.split(' ')[0]}</span>
-         <span class="text-sm font-bold text-slate-800">LOKET ${idLoket}</span>
+      <div class="text-right flex flex-col items-end">
+         <span class="text-xs font-bold text-slate-400 block break-words uppercase mb-1">${namaPetugas.split(' ')[0]}</span>
+         <span class="text-sm font-black bg-slate-100 text-blue-900 px-3 py-1 rounded-lg">LOKET ${idLoket}</span>
       </div>
     `;
     container.prepend(el);
