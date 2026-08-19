@@ -39,4 +39,6 @@ skills-lock.json
 mcp_out.json
 .env
 tmp/
+.agents/
+.playwright-mcp/
 
