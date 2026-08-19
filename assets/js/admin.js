@@ -95,8 +95,21 @@ document.addEventListener('DOMContentLoaded', () => {
       navItems.forEach((n) => n.classList.remove('active', 'text-slate-800'));
       tabContents.forEach((t) => t.classList.remove('active'));
       btn.classList.add('active');
-      const targetId = 'tab-' + btn.getAttribute('data-tab');
+      const tabName = btn.getAttribute('data-tab');
+      const targetId = 'tab-' + tabName;
       document.getElementById(targetId)?.classList.add('active');
+
+      const globalDateFilter = document.getElementById('global-date-filter');
+      if (globalDateFilter) {
+        const needsDates = ['kasir', 'traffic', 'digital', 'history'].includes(tabName);
+        if (needsDates) {
+          globalDateFilter.classList.remove('hidden');
+          globalDateFilter.classList.add('flex');
+        } else {
+          globalDateFilter.classList.add('hidden');
+          globalDateFilter.classList.remove('flex');
+        }
+      }
     });
   });
 
