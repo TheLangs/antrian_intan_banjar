@@ -33,11 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Set default dates (Today) on initialization
   const today = new Date();
   const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-  if (inpStart) inpStart.value = localToday;
-  if (inpEnd) inpEnd.value = localToday;
+  document.querySelectorAll('.tab-date-start').forEach((el) => (el.value = localToday));
+  document.querySelectorAll('.tab-date-end').forEach((el) => (el.value = localToday));
 
   // Events
-  if (btnFilter) btnFilter.addEventListener('click', fetchData);
+  document.querySelectorAll('.btn-apply-filter').forEach((btn) => btn.addEventListener('click', fetchData));
 
   ['ks-search', 'ks-nama'].forEach((id) => {
     const el = document.getElementById(id);
@@ -87,18 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const tabName = btn.getAttribute('data-tab');
       const targetId = 'tab-' + tabName;
       document.getElementById(targetId)?.classList.add('active');
-
-      const globalDateFilter = document.getElementById('global-date-filter');
-      if (globalDateFilter) {
-        const needsDates = ['kasir', 'traffic', 'digital', 'history'].includes(tabName);
-        if (needsDates) {
-          globalDateFilter.classList.remove('hidden');
-          globalDateFilter.classList.add('flex');
-        } else {
-          globalDateFilter.classList.add('hidden');
-          globalDateFilter.classList.remove('flex');
-        }
-      }
     });
   });
 
@@ -181,16 +169,20 @@ document.addEventListener('DOMContentLoaded', () => {
       let startD = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0).toISOString();
       let endD = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999).toISOString();
 
-      if (inpStart && inpStart.value) {
-        const p = inpStart.value.split('-');
+      const activeTabContent = document.querySelector('.tab-content.active');
+      const tabStart = activeTabContent ? activeTabContent.querySelector('.tab-date-start') : null;
+      const tabEnd = activeTabContent ? activeTabContent.querySelector('.tab-date-end') : null;
+
+      if (tabStart && tabStart.value) {
+        const p = tabStart.value.split('-');
         startD = new Date(p[0], p[1] - 1, p[2], 0, 0, 0).toISOString();
       }
-      if (inpEnd && inpEnd.value) {
-        const p = inpEnd.value.split('-');
+      if (tabEnd && tabEnd.value) {
+        const p = tabEnd.value.split('-');
         endD = new Date(p[0], p[1] - 1, p[2], 23, 59, 59, 999).toISOString();
       } else {
-        if (inpStart && inpStart.value) {
-          const p = inpStart.value.split('-');
+        if (tabStart && tabStart.value) {
+          const p = tabStart.value.split('-');
           endD = new Date(p[0], p[1] - 1, p[2], 23, 59, 59, 999).toISOString();
         }
       }
@@ -337,7 +329,9 @@ document.addEventListener('DOMContentLoaded', () => {
       let tr = document.createElement('tr');
       tr.className = (renderIdx % 2 === 0 ? 'bg-white ' : 'bg-slate-50/50 ') + 'hover:bg-blue-50/50 transition-colors border-b border-slate-100/70 border-dashed text-xs text-slate-600 font-medium whitespace-nowrap';
       const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
-      const wa = item.waktu_ambil ? new Date(item.waktu_ambil).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+      const waDateObj = item.waktu_ambil ? new Date(item.waktu_ambil) : null;
+      const waDateStr = waDateObj ? waDateObj.toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: '2-digit' }) : '-';
+      const wa = waDateObj ? waDateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
       const wp = item.waktu_panggil ? new Date(item.waktu_panggil).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
       const ws = item.waktu_selesai ? new Date(item.waktu_selesai).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
 
@@ -348,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (item.status === 'batal') b = 'bg-red-100 text-red-700';
 
       tr.innerHTML = `<td class="py-3.5 px-5 font-bold flex items-center gap-2"><div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg></div>${noLengkap}</td>
+<td class="py-3.5 px-5 font-semibold text-slate-700">${waDateStr}</td>
 <td class="py-3.5 px-5"><span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${item.metode_tiket || 'OFFLINE'}</span></td>
 <td class="py-3.5 px-5 font-semibold text-slate-700">${item.loket?.nama_loket || '-'} <span class="text-xs text-slate-400 font-normal ml-1">| ${item.nama_petugas || '-'}</span></td>
 <td class="py-3.5 px-5 text-center font-semibold text-slate-600">${wa}</td>
@@ -387,10 +382,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if it's the history CSV export
     if (exportType === 'history') {
       try {
-        let scsv = 'ID,Nomor,Platform,Status,Loket,Petugas,Ambil,Panggil,Selesai\n';
+        let scsv = 'ID,Nomor,Tanggal,Platform,Status,Loket,Petugas,Ambil,Panggil,Selesai\n';
         dataToExport.forEach((item) => {
           const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
-          scsv += `"${item.id_antrian}","${noLengkap}","${item.metode_tiket || ''}","${item.status || ''}","${item.loket?.nama_loket || ''}","${item.nama_petugas || ''}","${item.waktu_ambil || ''}","${item.waktu_panggil || ''}","${item.waktu_selesai || ''}"\n`;
+          const tgl = item.waktu_ambil ? new Date(item.waktu_ambil).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: '2-digit' }) : '';
+          scsv += `"${item.id_antrian}","${noLengkap}","${tgl}","${item.metode_tiket || ''}","${item.status || ''}","${item.loket?.nama_loket || ''}","${item.nama_petugas || ''}","${item.waktu_ambil || ''}","${item.waktu_panggil || ''}","${item.waktu_selesai || ''}"\n`;
         });
         const blob = new Blob([scsv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
@@ -432,8 +428,12 @@ document.addEventListener('DOMContentLoaded', () => {
       doc.setTextColor(50, 50, 50);
       doc.text(titles[exportType] || titles['overview'], 14, 28);
 
-      const realStart = document.getElementById('ov-date')?.value || new Date().toISOString().split('T')[0];
-      const realEnd = document.getElementById('ov-date')?.value || new Date().toISOString().split('T')[0];
+      const activeTabContent = document.querySelector('.tab-content.active');
+      const tabStart = activeTabContent ? activeTabContent.querySelector('.tab-date-start') : null;
+      const tabEnd = activeTabContent ? activeTabContent.querySelector('.tab-date-end') : null;
+
+      const realStart = tabStart && tabStart.value ? tabStart.value : new Date().toISOString().split('T')[0];
+      const realEnd = tabEnd && tabEnd.value ? tabEnd.value : new Date().toISOString().split('T')[0];
       doc.setFontSize(10);
       doc.text(`Periode Cetak: ${new Date().toLocaleDateString('id-ID')} | Tanggal Data: ${new Date(realStart).toLocaleDateString('id-ID')} s/d ${new Date(realEnd).toLocaleDateString('id-ID')}`, 14, 34);
 

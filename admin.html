@@ -170,15 +170,7 @@
           <span class="text-sm text-slate-600 font-medium" id="header-datetime"></span>
         </div>
         <div class="flex items-center gap-4">
-          <!-- Global Date Filter (Hidden on Live Tab) -->
-          <div id="global-date-filter" class="hidden items-center gap-2">
-            <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
-              <input type="date" id="ov-date" class="text-xs font-semibold text-slate-600 bg-transparent border-none py-1.5 px-2 outline-none cursor-pointer" />
-              <span class="text-[10px] font-bold text-slate-400">s/d</span>
-              <input type="date" id="ov-date-end" class="text-xs font-semibold text-slate-600 bg-transparent border-none py-1.5 px-2 outline-none cursor-pointer" />
-            </div>
-            <button id="btn-filter" class="bg-blue-800 hover:bg-blue-900 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm">Terapkan Filter</button>
-          </div>
+          <!-- Global Date Filter removed per user preference -->
 
           <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200"> <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif </span>
           <div class="w-7 h-7 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 border border-slate-200">
@@ -345,10 +337,16 @@
                 class="text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg py-2 pl-9 pr-3 shadow-sm outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all w-48"
                 placeholder="Cari nama kasir..." />
             </div>
-            
+
             <select id="ks-nama" class="text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg py-2 px-3 shadow-sm outline-none">
               <option value="ALL">Semua Kasir</option>
             </select>
+            <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+              <input type="date" class="tab-date-start text-xs font-semibold text-slate-600 bg-transparent border-none py-1 px-1 outline-none cursor-pointer" />
+              <span class="text-[10px] font-bold text-slate-400">s/d</span>
+              <input type="date" class="tab-date-end text-xs font-semibold text-slate-600 bg-transparent border-none py-1 px-1 outline-none cursor-pointer" />
+            </div>
+            <button class="btn-apply-filter bg-blue-800 hover:bg-blue-900 text-white text-[11px] font-bold px-3 py-1.5 rounded-md shadow-sm">Terapkan</button>
             <button data-export="kasir" class="btn-export bg-accent hover:opacity-90 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path
@@ -389,7 +387,12 @@
             <p class="text-sm text-slate-600 mt-1">Grafik distribusi kedatangan pelanggan per jam kerja.</p>
           </div>
           <div class="flex items-center gap-2">
-            
+            <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+              <input type="date" class="tab-date-start text-xs font-semibold text-slate-600 bg-transparent border-none py-1 px-1 outline-none cursor-pointer" />
+              <span class="text-[10px] font-bold text-slate-400">s/d</span>
+              <input type="date" class="tab-date-end text-xs font-semibold text-slate-600 bg-transparent border-none py-1 px-1 outline-none cursor-pointer" />
+            </div>
+            <button class="btn-apply-filter bg-blue-800 hover:bg-blue-900 text-white text-[11px] font-bold px-3 py-1.5 rounded-md shadow-sm">Terapkan</button>
             <button data-export="traffic" class="btn-export bg-accent hover:opacity-90 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path
@@ -439,7 +442,12 @@
             <p class="text-sm text-slate-600 mt-1">Perbandingan rasio tiket cetak vs tiket digital (QR Code).</p>
           </div>
           <div class="flex items-center gap-2">
-            
+            <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+              <input type="date" class="tab-date-start text-xs font-semibold text-slate-600 bg-transparent border-none py-1 px-1 outline-none cursor-pointer" />
+              <span class="text-[10px] font-bold text-slate-400">s/d</span>
+              <input type="date" class="tab-date-end text-xs font-semibold text-slate-600 bg-transparent border-none py-1 px-1 outline-none cursor-pointer" />
+            </div>
+            <button class="btn-apply-filter bg-blue-800 hover:bg-blue-900 text-white text-[11px] font-bold px-3 py-1.5 rounded-md shadow-sm">Terapkan</button>
             <button data-export="digital" class="btn-export bg-accent hover:opacity-90 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path
@@ -530,7 +538,12 @@
                 class="text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg py-2 pl-9 pr-3 shadow-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all w-56"
                 placeholder="Cari No. Antrean, Nama..." />
             </div>
-            <!-- Remove hs-date -->
+            <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+              <input type="date" class="tab-date-start text-xs font-semibold text-slate-600 bg-transparent border-none py-1 px-1 outline-none cursor-pointer" />
+              <span class="text-[10px] font-bold text-slate-400">s/d</span>
+              <input type="date" class="tab-date-end text-xs font-semibold text-slate-600 bg-transparent border-none py-1 px-1 outline-none cursor-pointer" />
+            </div>
+            <button class="btn-apply-filter bg-blue-800 hover:bg-blue-900 text-white text-[11px] font-bold px-3 py-1.5 rounded-md shadow-sm">Terapkan</button>
             <select id="hs-status" class="text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg py-2 px-3 shadow-sm outline-none">
               <option value="ALL">Semua Status</option>
               <option value="selesai">Selesai</option>
@@ -561,6 +574,7 @@
               <thead class="sticky top-0 z-10 shadow-sm">
                 <tr class="text-xs uppercase tracking-wider font-bold text-slate-500 bg-slate-50 border-b border-slate-200">
                   <th class="px-5 py-3">No. Antrean</th>
+                  <th class="px-5 py-3">Tanggal</th>
                   <th class="px-5 py-3">Metode</th>
                   <th class="px-5 py-3">Loket & Petugas</th>
                   <th class="px-5 py-3 text-center">Waktu Ambil</th>
