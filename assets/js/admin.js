@@ -1258,6 +1258,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const marqInput = document.getElementById('input-marq');
             if (marqInput) marqInput.value = setting.val_text;
           }
+          if (setting.key_name === 'video_url') {
+            const vidInput = document.getElementById('input-vid');
+            if (vidInput) vidInput.value = setting.val_text;
+          }
         });
       }
     } catch (e) {
@@ -1302,6 +1306,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnSaveMarq) {
     btnSaveMarq.addEventListener('click', async () => {
       const newVal = document.getElementById('input-marq').value.trim();
+      const vidVal = document.getElementById('input-vid') ? document.getElementById('input-vid').value.trim() : '';
+
       if (!newVal) return alert('Teks pengumuman tidak boleh kosong!');
 
       const prevText = btnSaveMarq.textContent;
@@ -1309,11 +1315,20 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSaveMarq.disabled = true;
 
       try {
-        const { error } = await supabase.from('app_settings').update({ val_text: newVal }).eq('key_name', 'marquee_text');
-        if (error) throw error;
-        alert('Teks Pengumuman TV berhasil diperbarui!');
+        const promises = [supabase.from('app_settings').update({ val_text: newVal }).eq('key_name', 'marquee_text')];
+
+        if (vidVal) {
+          promises.push(supabase.from('app_settings').update({ val_text: vidVal }).eq('key_name', 'video_url'));
+        }
+
+        const results = await Promise.all(promises);
+        results.forEach((r) => {
+          if (r.error) throw r.error;
+        });
+
+        alert('Pengaturan Layar TV berhasil diperbarui!');
       } catch (e) {
-        alert('Gagal menyimpan teks: ' + e.message);
+        alert('Gagal menyimpan pengaturan: ' + e.message);
       } finally {
         btnSaveMarq.textContent = prevText;
         btnSaveMarq.disabled = false;
