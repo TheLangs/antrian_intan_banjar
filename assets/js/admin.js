@@ -343,12 +343,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (item.status === 'terlewat') b = 'bg-amber-100 text-amber-700';
       if (item.status === 'batal') b = 'bg-red-100 text-red-700';
 
-      tr.innerHTML = `<td class="py-3.5 px-6 font-bold flex items-center gap-2"><div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg></div>${noLengkap}</td>
-<td class="py-3.5 px-6"><span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${item.metode_tiket || 'OFFLINE'}</span></td>
-<td class="py-3.5 px-6"><span class="px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase ${b}">${item.status}</span></td>
-<td class="py-3.5 px-6 font-semibold text-slate-700">${item.loket?.nama_loket || '-'} <span class="text-xs text-slate-400 font-normal ml-1">| ${item.nama_petugas || '-'}</span></td>
-<td class="py-3.5 px-6"><div class="flex items-center gap-3"><div class="flex flex-col"><span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Ambil</span><span class="font-semibold">${wa}</span></div><div class="flex flex-col"><span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Layan</span><span class="font-semibold">${wp}</span></div><div class="flex flex-col"><span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Selesai</span><span class="font-semibold">${ws}</span></div></div></td>
-<td class="py-3.5 px-6"><div class="flex items-center gap-4 text-right"><div class="flex flex-col"><span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Tunggu</span><span class="font-medium">${waitTimeStr}</span></div><div class="flex flex-col"><span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Layan</span><span class="font-medium text-slate-700">${svcTimeStr}</span></div></div></td>`;
+      tr.innerHTML = `<td class="py-3.5 px-5 font-bold flex items-center gap-2"><div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg></div>${noLengkap}</td>
+<td class="py-3.5 px-5"><span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${item.metode_tiket || 'OFFLINE'}</span></td>
+<td class="py-3.5 px-5 font-semibold text-slate-700">${item.loket?.nama_loket || '-'} <span class="text-xs text-slate-400 font-normal ml-1">| ${item.nama_petugas || '-'}</span></td>
+<td class="py-3.5 px-5 text-center font-semibold text-slate-600">${wa}</td>
+<td class="py-3.5 px-5 text-center font-semibold text-slate-600">${wp}</td>
+<td class="py-3.5 px-5 text-center font-semibold text-slate-600">${ws}</td>
+<td class="py-3.5 px-5 text-center font-medium">${waitTimeStr}</td>
+<td class="py-3.5 px-5 text-center font-medium text-slate-700">${svcTimeStr}</td>
+<td class="py-3.5 px-5 text-right"><span class="px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase ${b}">${item.status}</span></td>`;
       tableBody.appendChild(tr);
       renderIdx++;
     });
