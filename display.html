@@ -24,9 +24,9 @@
     </header>
 
     <!-- Main Layout -->
-    <main class="flex-grow flex gap-6 p-6 min-h-0">
+    <main class="flex-grow grid grid-cols-12 gap-6 p-6 min-h-0">
       <!-- Left Column: Lokets & Media -->
-      <section class="flex-[3] flex flex-col gap-6 h-full min-h-0">
+      <section class="col-span-8 flex flex-col gap-6 h-full min-h-0">
         <!-- Top Lockers -->
         <div id="display-grid-top" class="grid grid-cols-1 md:grid-cols-3 gap-6 h-[55%] shrink-0">
           <!-- Dynamically injected via JS -->
@@ -39,7 +39,7 @@
       </section>
 
       <!-- Right Column: Queue History Sidebar -->
-      <aside class="flex-[1] bg-white rounded-2xl shadow-lg flex flex-col overflow-hidden border border-slate-200 h-full min-h-0">
+      <aside class="col-span-4 bg-white rounded-2xl shadow-lg flex flex-col overflow-hidden border border-slate-200 h-full min-h-0">
         <div class="bg-blue-900 border-b border-blue-950 text-white p-5 shadow-sm z-10 shrink-0 text-center flex items-center justify-center">
           <h3 class="text-xl font-bold tracking-widest uppercase">Baru Dipanggil</h3>
         </div>
