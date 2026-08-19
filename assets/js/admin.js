@@ -313,6 +313,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return matchSearch && matchStatus && matchLoket;
     });
 
+    filteredData.reverse();
+
     window.filteredHistoryData = filteredData;
     if (tableBody) tableBody.innerHTML = '';
     if (tableEmpty) tableEmpty.classList.add('hidden');
