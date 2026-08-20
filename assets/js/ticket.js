@@ -109,9 +109,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (waitInfo) waitInfo.classList.add('hidden');
         document.getElementById('guide-info')?.classList.add('hidden');
 
-        // play local haptic feedback if available
+        // play local haptic feedback if available (aggressive pulse)
         try {
-          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+          if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
         } catch (e) {}
 
         doneMask.classList.add('hidden');
