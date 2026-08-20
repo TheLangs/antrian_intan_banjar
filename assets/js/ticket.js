@@ -104,10 +104,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 50);
 
         // hide wait info blocks
-        const waitInfo = document.getElementById('wait-info');
         if (waitInfo) waitInfo.classList.add('hidden');
-        const guideInfo = document.getElementById('guide-info');
-        if (guideInfo) guideInfo.classList.add('hidden');
+        document.getElementById('guide-info')?.classList.add('hidden');
 
         // play local haptic feedback if available
         try {
@@ -129,8 +127,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         doneMask.classList.remove('hidden');
         doneMask.classList.add('flex');
 
+        // Hide call-info and wait-info in case of direct state transition
+        callInfo.classList.add('hidden');
+        if (waitInfo) waitInfo.classList.add('hidden');
+        document.getElementById('guide-info')?.classList.add('hidden');
+
         if (data.status === 'terlewat' || data.status === 'batal') {
-          dmIconBg.className = 'w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-6';
+          dmIconBg.className = 'w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-6 shadow-sm';
           dmIcon.textContent = 'warning';
           dmTitle.className = 'text-2xl font-bold text-red-700 mb-2';
           dmTitle.textContent = data.status === 'terlewat' ? 'Antrean Terlewat' : 'Antrean Dibatalkan';
@@ -140,7 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           dmBtn.className = 'bg-red-600 text-white hover:bg-red-700 text-sm font-bold px-8 py-3 rounded-full transition-colors shadow-sm';
         } else {
           // Default to selesai (success mode)
-          dmIconBg.className = 'w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6';
+          dmIconBg.className = 'w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-sm';
           dmIcon.textContent = 'check_circle';
           dmTitle.className = 'text-2xl font-bold text-emerald-700 mb-2';
           dmTitle.textContent = 'Antrean Selesai';
