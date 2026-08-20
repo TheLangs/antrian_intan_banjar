@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (data.status === 'menunggu') {
         updateQueueAhead(currentTicketId);
+        updateServingStatus();
       }
 
       setConnectionStatus('connected');
@@ -78,25 +79,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Render Status Mode
     switch (data.status) {
       case 'menunggu':
-        elStatusBadge.className = 'px-4 py-1.5 rounded-full text-sm font-bold bg-slate-100 text-slate-600';
-        elStatusBadge.textContent = 'Dalam Antrean';
+        elStatusBadge.className = 'inline-flex items-center px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200';
+        elStatusBadge.textContent = 'Status: Menunggu';
 
-        callInfo.classList.remove('translate-y-0');
-        callInfo.classList.add('translate-y-full');
+        callInfo.classList.add('hidden');
+        callInfo.classList.remove('flex', 'scale-100', 'opacity-100');
+        callInfo.classList.add('scale-95', 'opacity-0');
         doneMask.classList.add('hidden');
+        doneMask.classList.remove('flex');
         break;
 
       case 'dipanggil':
-        elStatusBadge.className = 'px-4 py-1.5 rounded-full text-sm font-bold bg-amber-100 text-amber-700';
+        elStatusBadge.className = 'inline-flex items-center px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200';
         elStatusBadge.textContent = 'Giliran Anda!';
 
         elLoket.textContent = data.loket?.nama_loket || `Loket ${data.id_loket || '-'}`;
 
         // timeout to allow browser layout calc if previously hidden
+        callInfo.classList.remove('hidden');
+        callInfo.classList.add('flex');
         setTimeout(() => {
-          callInfo.classList.remove('translate-y-full');
-          callInfo.classList.add('translate-y-0');
+          callInfo.classList.remove('scale-95', 'opacity-0');
+          callInfo.classList.add('scale-100', 'opacity-100');
         }, 50);
+
+        // hide wait info blocks
+        const waitInfo = document.getElementById('wait-info');
+        if (waitInfo) waitInfo.classList.add('hidden');
+        const guideInfo = document.getElementById('guide-info');
+        if (guideInfo) guideInfo.classList.add('hidden');
 
         // play local haptic feedback if available
         try {
@@ -123,6 +134,58 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (!error && count !== null) {
         elSisa.textContent = count.toString();
+
+        const elEstimasi = document.getElementById('t-estimasi');
+        if (elEstimasi) {
+          const proxyMins = count * 3; // Estimated 3 mins per person
+          elEstimasi.innerHTML = `~ ${proxyMins} <span class="text-base text-slate-500">Min</span>`;
+        }
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async function updateServingStatus() {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    try {
+      const { data, error } = await supabase
+        .from('antrian')
+        .select('kode_antrian, nomor_antrian, id_loket, loket(nama_loket)')
+        .eq('status', 'dipanggil')
+        .gte('waktu_ambil', todayStart.toISOString())
+        .order('waktu_panggil', { ascending: false });
+
+      const panel = document.getElementById('currently-serving-panel');
+      const list = document.getElementById('serving-list');
+
+      if (error || !data || data.length === 0) {
+        if (panel) panel.classList.add('hidden');
+        return;
+      }
+
+      if (panel) panel.classList.remove('hidden');
+      if (list) {
+        list.innerHTML = data
+          .map(
+            (q, idx) => `
+          <div class="flex items-center justify-between p-3 rounded-xl ${idx === 0 ? 'bg-slate-50 border border-slate-200' : 'border border-slate-100'}">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-full ${idx === 0 ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'} flex items-center justify-center font-bold text-lg">
+                ${q.id_loket || '-'}
+              </div>
+              <div>
+                <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">${q.loket?.nama_loket || 'Loket'}</span>
+                <span class="block text-xl font-bold text-slate-800">${q.kode_antrian}-${String(q.nomor_antrian).padStart(3, '0')}</span>
+              </div>
+            </div>
+            ${idx === 0 ? '<span class="material-symbols-outlined text-amber-500 animate-pulse">volume_up</span>' : ''}
+          </div>
+        `,
+          )
+          .join('');
       }
     } catch (e) {
       console.log(e);
@@ -146,9 +209,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             // refetch to get joined loket data cleanly
             fetchTicketData();
           } else if (payload.new.status !== 'menunggu') {
-            // Someone else got called (or finished etc). If we are waiting, update counter.
-            if (currentTicketId && callInfo.classList.contains('translate-y-full')) {
+            // Someone else got called (or finished etc).
+            if (currentTicketId && callInfo.classList.contains('hidden')) {
               updateQueueAhead(currentTicketId);
+              updateServingStatus();
             }
           }
         },
