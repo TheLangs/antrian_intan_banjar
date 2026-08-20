@@ -7,19 +7,21 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="assets/css/custom.css" />
   </head>
-  <body class="bg-slate-100 min-h-screen flex flex-col overflow-hidden selection:bg-blue-200 font-sans">
-    <!-- Top Header Full Width -->
-    <header class="bg-blue-900 text-white shadow-md px-10 py-5 flex items-center justify-between z-10 shrink-0">
+  <body class="bg-slate-50 min-h-screen flex flex-col overflow-hidden selection:bg-sky-200 font-sans">
+    <!-- Top Header Full Width (Corporate) -->
+    <header class="bg-blue-800 text-white shadow-lg shadow-blue-900/20 px-10 py-5 flex items-center justify-between z-10 shrink-0">
       <div class="flex items-center gap-6 relative z-10">
-        <img src="assets/images/logo-intan-banjar.png" alt="Logo Intan Banjar" class="w-16 h-16 object-contain drop-shadow-sm" />
+        <div class="bg-white p-2 rounded-2xl shadow-inner">
+          <img src="assets/images/logo-intan-banjar.png" alt="Logo Intan Banjar" class="w-14 h-14 object-contain" />
+        </div>
         <div>
-          <h1 class="text-3xl font-extrabold tracking-tight text-white drop-shadow-sm">PT Air Minum Intan Banjar (Perseroda)</h1>
-          <p class="text-blue-200 text-sm font-bold mt-1 uppercase tracking-[0.15em]">Sistem Layanan Pelanggan</p>
+          <h1 class="text-3xl font-bold tracking-tight text-white drop-shadow-sm">PT Air Minum Intan Banjar (Perseroda)</h1>
+          <p class="text-sky-200 text-sm font-semibold mt-1 uppercase tracking-[0.15em]">Sistem Layanan Pelanggan</p>
         </div>
       </div>
       <div class="text-right relative z-10">
-        <h2 id="clock" class="text-5xl font-black tabular-nums tracking-tighter text-white drop-shadow-sm">00:00:00</h2>
-        <p id="date" class="text-blue-200 text-sm font-bold mt-1 tracking-wide">Hari, Tanggal Bulan Tahun</p>
+        <h2 id="clock" class="text-5xl font-black tabular-nums tracking-normal text-white drop-shadow-sm">00:00:00</h2>
+        <p id="date" class="text-sky-200 text-sm font-medium mt-1 tracking-wide">Hari, Tanggal Bulan Tahun</p>
       </div>
     </header>
 
@@ -33,27 +35,27 @@
         </div>
 
         <!-- Media Player Container -->
-        <div id="media-container" class="bg-black rounded-2xl shadow-lg flex-grow overflow-hidden relative flex items-center justify-center">
+        <div id="media-container" class="bg-slate-900 rounded-[2rem] shadow-xl flex-grow overflow-hidden relative flex items-center justify-center border border-slate-800">
           <p class="text-slate-600 font-bold tracking-[0.2em] text-xl">MENUNGGU MEDIA...</p>
         </div>
       </section>
 
       <!-- Right Column: Queue History Sidebar -->
-      <aside class="col-span-4 bg-white rounded-2xl shadow-lg flex flex-col overflow-hidden border border-slate-200 h-full min-h-0">
-        <div class="bg-blue-900 border-b border-blue-950 text-white p-5 shadow-sm z-10 shrink-0 text-center flex items-center justify-center">
-          <h3 class="text-xl font-bold tracking-widest uppercase">Baru Dipanggil</h3>
+      <aside class="col-span-4 bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 flex flex-col overflow-hidden border border-slate-200 h-full min-h-0">
+        <div class="bg-blue-800 border-b border-blue-900 text-white px-5 py-6 shadow-sm z-10 shrink-0 text-center flex items-center justify-center">
+          <h3 class="text-xl font-bold tracking-[0.15em] uppercase text-white">Baru Dipanggil</h3>
         </div>
-        <div id="queue-history-list" class="flex-grow overflow-y-hidden relative p-4 flex flex-col gap-3 bg-slate-50">
+        <div id="queue-history-list" class="flex-grow overflow-y-hidden relative p-5 flex flex-col gap-4 bg-slate-50">
           <!-- Activity list dynamically stacked via JS -->
         </div>
       </aside>
     </main>
 
     <!-- Footer Running Text -->
-    <footer class="bg-blue-950 border-t border-slate-800 shrink-0 shadow-xl overflow-hidden flex items-center justify-start z-10 w-full relative h-[70px]">
-      <div class="bg-amber-500 text-slate-900 h-full px-6 flex items-center justify-center shadow-lg z-20 shrink-0 text-lg font-black uppercase tracking-widest border-r border-amber-600">PENGUMUMAN</div>
+    <footer class="bg-blue-900 border-t-4 border-amber-500 shrink-0 shadow-2xl overflow-hidden flex items-center justify-start z-10 w-full relative h-[70px]">
+      <div class="bg-amber-500 text-slate-800 h-full px-8 flex items-center justify-center shadow-lg z-20 shrink-0 text-lg font-black uppercase tracking-widest border-r border-amber-600">PENGUMUMAN</div>
       <div class="flex-grow flex items-center mx-6 w-full h-full relative z-0">
-        <div id="tv-marquee" class="animate-[marquee_25s_linear_infinite] whitespace-nowrap text-amber-300 text-3xl font-semibold tracking-wide absolute">
+        <div id="tv-marquee" class="animate-[marquee_25s_linear_infinite] whitespace-nowrap text-white text-3xl font-semibold tracking-wide absolute">
           Selamat Datang di PT Air Minum Intan Banjar (Perseroda). Harap siapkan nomor antrean Anda. Pelayanan loket dimulai dari pukul 08:00 hingga 15:00. Mohon menunggu dengan tertib di area yang telah disediakan.
         </div>
       </div>
