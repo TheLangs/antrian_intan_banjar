@@ -87,6 +87,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         callInfo.classList.add('scale-95', 'opacity-0');
         doneMask.classList.add('hidden');
         doneMask.classList.remove('flex');
+
+        document.getElementById('skipped-info')?.classList.add('hidden');
         break;
 
       case 'dipanggil':
@@ -113,44 +115,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (e) {}
 
         doneMask.classList.add('hidden');
+        document.getElementById('skipped-info')?.classList.add('hidden');
+        break;
+
+      case 'terlewat':
+      case 'batal':
+        elStatusBadge.className = 'inline-flex items-center px-3 py-1 rounded-full bg-red-50 text-red-700 text-xs font-bold border border-red-200';
+        elStatusBadge.textContent = data.status === 'terlewat' ? 'Terlewat' : 'Dibatalkan';
+
+        callInfo.classList.add('hidden');
+        callInfo.classList.remove('flex');
+        document.getElementById('wait-info')?.classList.add('hidden');
+        document.getElementById('guide-info')?.classList.add('hidden');
+        doneMask.classList.add('hidden');
+        doneMask.classList.remove('flex');
+
+        const skippedInfo = document.getElementById('skipped-info');
+        if (skippedInfo) {
+          skippedInfo.classList.remove('hidden');
+          skippedInfo.classList.add('flex');
+          const skipTitle = document.getElementById('skip-title');
+          const skipDesc = document.getElementById('skip-desc');
+          if (skipTitle) skipTitle.textContent = data.status === 'terlewat' ? 'Antrean Terlewat' : 'Antrean Dibatalkan';
+          if (skipDesc)
+            skipDesc.textContent =
+              data.status === 'terlewat' ? 'Nomor Anda telah terlewat. Mohon tunggu di area pendaftaran. Jika kondisi sudah siap, silakan konfirmasi ke petugas untuk dipanggil kembali.' : 'Nomor antrean Anda telah dibatalkan.';
+        }
         break;
 
       case 'selesai':
-      case 'terlewat':
-      case 'batal':
-        const dmIconBg = document.getElementById('dm-icon-bg');
-        const dmIcon = document.getElementById('dm-icon');
-        const dmTitle = document.getElementById('dm-title');
-        const dmDesc = document.getElementById('dm-desc');
-        const dmBtn = document.getElementById('dm-btn');
+        callInfo.classList.add('hidden');
+        callInfo.classList.remove('flex');
+        document.getElementById('wait-info')?.classList.add('hidden');
+        document.getElementById('guide-info')?.classList.add('hidden');
+        const sInfo = document.getElementById('skipped-info');
+        if (sInfo) {
+          sInfo.classList.add('hidden');
+          sInfo.classList.remove('flex');
+        }
 
         doneMask.classList.remove('hidden');
         doneMask.classList.add('flex');
-
-        // Hide call-info and wait-info in case of direct state transition
-        callInfo.classList.add('hidden');
-        if (waitInfo) waitInfo.classList.add('hidden');
-        document.getElementById('guide-info')?.classList.add('hidden');
-
-        if (data.status === 'terlewat' || data.status === 'batal') {
-          dmIconBg.className = 'w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-6 shadow-sm';
-          dmIcon.textContent = 'warning';
-          dmTitle.className = 'text-2xl font-bold text-red-700 mb-2';
-          dmTitle.textContent = data.status === 'terlewat' ? 'Antrean Terlewat' : 'Antrean Dibatalkan';
-          dmDesc.className = 'text-sm font-medium text-red-600/80 mb-8 max-w-[250px] mx-auto';
-          dmDesc.textContent =
-            data.status === 'terlewat' ? 'Nomor Anda telah terlewat. Mohon tunggu di area pendaftaran. Jika kondisi sudah siap, silakan konfirmasi ke petugas untuk dipanggil kembali.' : 'Nomor antrean Anda telah dibatalkan.';
-          dmBtn.className = 'bg-red-600 text-white hover:bg-red-700 text-sm font-bold px-8 py-3 rounded-full transition-colors shadow-sm';
-        } else {
-          // Default to selesai (success mode)
-          dmIconBg.className = 'w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-sm';
-          dmIcon.textContent = 'check_circle';
-          dmTitle.className = 'text-2xl font-bold text-emerald-700 mb-2';
-          dmTitle.textContent = 'Antrean Selesai';
-          dmDesc.className = 'text-sm font-medium text-slate-500 mb-8 max-w-[250px] mx-auto';
-          dmDesc.textContent = 'Pelayanan telah selesai. Terima kasih atas kunjungan Anda.';
-          dmBtn.className = 'bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-bold px-8 py-3 rounded-full transition-colors shadow-sm';
-        }
         break;
     }
   }

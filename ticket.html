@@ -77,6 +77,15 @@
           <p class="text-sm font-medium text-amber-700/80 mt-2">Petugas kami telah bersiap menunggu kedatangan Anda.</p>
         </section>
 
+        <!-- Skipped Information Panel -->
+        <section id="skipped-info" class="bg-red-50 rounded-xl shadow-sm border border-red-200 p-6 flex-col items-center justify-center text-center hidden transition-all duration-300">
+          <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="material-symbols-outlined text-3xl">warning</span>
+          </div>
+          <h3 class="text-xl font-bold text-red-700 mb-2" id="skip-title">Antrean Terlewat</h3>
+          <p class="text-sm font-medium text-red-600/80 mb-2" id="skip-desc">Nomor Anda telah terlewat. Mohon tunggu di area pendaftaran. Jika kondisi sudah siap, silakan konfirmasi ke petugas untuk dipanggil kembali.</p>
+        </section>
+
         <!-- Real-time Status Card -->
         <section id="wait-info" class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
           <div class="flex items-center justify-between mb-4 mt-1">
@@ -105,7 +114,7 @@
         </section>
 
         <!-- Done Mask -->
-        <div id="done-mask" class="hidden absolute inset-0 m-4 bg-white/95 backdrop-blur-md rounded-xl p-8 flex-col items-center justify-center text-center shadow-lg border border-slate-200 z-10">
+        <div id="done-mask" class="hidden bg-white/95 backdrop-blur-md rounded-xl p-8 flex-col items-center justify-center text-center shadow-lg border border-slate-200 z-10 w-full">
           <div id="dm-icon-bg" class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-sm">
             <span id="dm-icon" class="material-symbols-outlined text-4xl">check_circle</span>
           </div>
