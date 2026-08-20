@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           dmTitle.textContent = data.status === 'terlewat' ? 'Antrean Terlewat' : 'Antrean Dibatalkan';
           dmDesc.className = 'text-sm font-medium text-red-600/80 mb-8 max-w-[250px] mx-auto';
           dmDesc.textContent =
-            data.status === 'terlewat' ? 'Nomor Anda telah terlewat. Mohon tunggu area pendaftaran. Jika kondisi sudah siap, silakan konfirmasi ke petugas untuk dipanggil kembali.' : 'Nomor antrean Anda telah dibatalkan.';
+            data.status === 'terlewat' ? 'Nomor Anda telah terlewat. Mohon tunggu di area pendaftaran. Jika kondisi sudah siap, silakan konfirmasi ke petugas untuk dipanggil kembali.' : 'Nomor antrean Anda telah dibatalkan.';
           dmBtn.className = 'bg-red-600 text-white hover:bg-red-700 text-sm font-bold px-8 py-3 rounded-full transition-colors shadow-sm';
         } else {
           // Default to selesai (success mode)
