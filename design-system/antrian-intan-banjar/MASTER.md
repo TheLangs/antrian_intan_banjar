@@ -1,215 +1,118 @@
-# Design System Master File
+# Design System Master File: PT Air Minum Intan Banjar
 
-> **LOGIC:** When building a specific page, first check `design-system/pages/[page-name].md`.
-> If that file exists, its rules **override** this Master file.
-> If not, strictly follow the rules below.
-
----
-
-**Project:** Antrian Intan Banjar
-**Generated:** 2026-08-15 18:40:02
-**Category:** B2B Service
+> **LOGIC:** This is the Single Source of Truth for all UI/UX guidelines mapping to the finalized, approved **"Classic Admin Dashboard"** style. Avoid arbitrary styling or unauthorized semantic abstractions. Stick to the raw Tailwind
+> utility classes described here unless explicitly needed.
 
 ---
 
-## Global Rules
-
-### Color Palette
-
-| Role | Hex | CSS Variable |
-|------|-----|--------------|
-| Primary | `#0F172A` | `--color-primary` |
-| On Primary | `#FFFFFF` | `--color-on-primary` |
-| Secondary | `#334155` | `--color-secondary` |
-| On Secondary | `#FFFFFF` | `--color-on-secondary` |
-| Accent/CTA | `#0369A1` | `--color-accent` |
-| On Accent/CTA | `#FFFFFF` | `--color-on-accent` |
-| Background | `#F8FAFC` | `--color-background` |
-| Foreground | `#020617` | `--color-foreground` |
-| Card | `#FFFFFF` | `--color-card` |
-| Card Foreground | `#020617` | `--color-card-foreground` |
-| Muted | `#E8ECF1` | `--color-muted` |
-| Muted Foreground | `#475569` | `--color-muted-foreground` |
-| Border | `#E2E8F0` | `--color-border` |
-| Destructive | `#DC2626` | `--color-destructive` |
-| On Destructive | `#FFFFFF` | `--color-on-destructive` |
-| Ring | `#0F172A` | `--color-ring` |
-
-**Color Notes:** Professional navy + blue CTA
-
-### Typography
-
-- **Heading Font:** EB Garamond
-- **Body Font:** Lato
-- **Mood:** legal, professional, traditional, trustworthy, formal, authoritative
-- **Google Fonts:** [EB Garamond + Lato](https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;700&display=swap)
-
-**CSS Import:**
-```css
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;700&display=swap');
-```
-
-### Spacing Variables
-
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--space-xs` | `4px` / `0.25rem` | Tight gaps |
-| `--space-sm` | `8px` / `0.5rem` | Icon gaps, inline spacing |
-| `--space-md` | `16px` / `1rem` | Standard padding |
-| `--space-lg` | `24px` / `1.5rem` | Section padding |
-| `--space-xl` | `32px` / `2rem` | Large gaps |
-| `--space-2xl` | `48px` / `3rem` | Section margins |
-| `--space-3xl` | `64px` / `4rem` | Hero padding |
-
-### Shadow Depths
-
-| Level | Value | Usage |
-|-------|-------|-------|
-| `--shadow-sm` | `0 1px 2px rgba(0,0,0,0.05)` | Subtle lift |
-| `--shadow-md` | `0 4px 6px rgba(0,0,0,0.1)` | Cards, buttons |
-| `--shadow-lg` | `0 10px 15px rgba(0,0,0,0.1)` | Modals, dropdowns |
-| `--shadow-xl` | `0 20px 25px rgba(0,0,0,0.15)` | Hero images, featured cards |
+**Project:** Antrian Intan Banjar **Category:** B2B / Public Service Utility **Mood:** Legal, professional, clean, flat-design with high contrast. **Anti-Pattern Alert:** ❌ No glassmorphism, ❌ No neon gradients, ❌ No AI purple/pink
+palettes.
 
 ---
 
-## Component Specs
+## 1. Global Rules & Identity
 
-### Buttons
+### A. Color Palette (Raw Tailwind Classes & Variables)
 
-```css
-/* Primary Button */
-.btn-primary {
-  background: #0369A1;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 200ms ease;
-  cursor: pointer;
-}
+The application relies heavily on Tailwind's default colors structured around a clean blue corporate identity. Do **not** use arbitrary HEX values in HTML.
 
-.btn-primary:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
+| Role                 | HEX Reference | Tailwind Class     | Usage / Target UI                                               |
+| -------------------- | ------------- | ------------------ | --------------------------------------------------------------- |
+| **Primary (Brand)**  | `#0B5C9E`     | `bg-blue-800`      | Sidebar admin, header kartu, tombol aksi utama, logo container. |
+| **Primary Hover**    | `#1E3A8A`     | `bg-blue-900`      | State saat hover pada tombol utama.                             |
+| **Accent / CTA**     | `#0088CC`     | `bg-sky-600`       | Menu sidebar aktif, tautan teks, highlight status.              |
+| **Background Base**  | `#F8FAFC`     | `bg-slate-50`      | Latar belakang seluruh halaman utama.                           |
+| **Card / Surface**   | `#FFFFFF`     | `bg-white`         | Latar belakang setiap box, card, atau modal.                    |
+| **Card Border**      | `#E2E8F0`     | `border-slate-200` | Garis pinggir semua komponen form, tabel, dan card.             |
+| **Text Primary**     | `#1E293B`     | `text-slate-800`   | Teks judul utama, angka kritis, nomor antrean.                  |
+| **Text Secondary**   | `#64748B`     | `text-slate-500`   | Sub-judul, placeholder, label waktu.                            |
+| **Success / Done**   | `#059669`     | `bg-emerald-600`   | Tombol 'Selesai', badge indikator sukses.                       |
+| **Warning / Recall** | `#D97706`     | `bg-amber-600`     | Sorotan kartu kedip, tombol "Panggil Ulang".                    |
+| **Danger / Skip**    | `#DC2626`     | `bg-red-600`       | Tombol "Lewati", logout, notifikasi kesalahan.                  |
 
-/* Secondary Button */
-.btn-secondary {
-  background: transparent;
-  color: #0F172A;
-  border: 2px solid #0F172A;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 200ms ease;
-  cursor: pointer;
-}
+---
+
+### B. Typography
+
+We utilize modern, highly legible sans-serif typefaces suitable for both dense dashboards and large television displays.
+
+- **Font Stack:** `Inter`, `Plus Jakarta Sans`, atau bawaan Tailwind `system-ui`, `sans-serif`. (Jangan gunakan serif seperti EB Garamond untuk UI ini).
+- **Scale:**
+  - `text-[5.5rem]` s.d `text-9xl` (`font-black`) : Layar antrean TV, tiket mobile.
+  - `text-2xl` s.d `text-3xl` (`font-bold`) : Header Dashboard.
+  - `text-xs` s.d `text-sm` (`font-semibold`) : Label tebal kecil (_uppercase tracking-wider_).
+
+---
+
+### C. Component Styles (Admin Aesthetics)
+
+#### 1. Cards (Kotak Konten)
+
+Menggunakan pendekatan datar (_flat_) namun tegas:
+
+```html
+<div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">...</div>
 ```
 
-### Cards
+#### 2. Buttons
 
 ```css
-.card {
-  background: #F8FAFC;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: var(--shadow-md);
-  transition: all 200ms ease;
-  cursor: pointer;
-}
-
-.card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-}
+/* Primary Blue */
+class="bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2.5 px-4 rounded-xl transition-colors"
+/* Secondary White */
+class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold py-2.5 px-4 rounded-xl transition-colors"
 ```
 
-### Inputs
+#### 3. Data Tables
 
-```css
-.input {
-  padding: 12px 16px;
-  border: 1px solid #E2E8F0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 200ms ease;
-}
+Batas tipis dengan latar kepala tabel abu-abu terang:
 
-.input:focus {
-  border-color: #0F172A;
-  outline: none;
-  box-shadow: 0 0 0 3px #0F172A20;
-}
-```
-
-### Modals
-
-```css
-.modal-overlay {
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-}
-
-.modal {
-  background: white;
-  border-radius: 16px;
-  padding: 32px;
-  box-shadow: var(--shadow-xl);
-  max-width: 500px;
-  width: 90%;
-}
+```html
+<thead class="bg-slate-50 border-b border-slate-200">
+  <tr class="text-xs uppercase tracking-wider font-bold text-slate-500">
+    ...
+  </tr>
+</thead>
 ```
 
 ---
 
-## Style Guidelines
+## 2. Component Guidelines Per Module
 
-**Style:** Accessible & Ethical
+#### A. Kios Antrean Pelanggan (`index.html`)
 
-**Keywords:** Accessible, inclusive interface, high contrast, large text (16px+), keyboard navigation, screen reader friendly, accessibility standards aware, focus state, semantic
+- **Header**: Logo Intan Banjar + Judul Sistem Pelayanan Kasir.
+- **Kartu Opsi**: Sangat kontras. Tombol "Cetak Fisik" menggunakan latar putih dengan bingkai `border-blue-800`. Opsi digital menggunakan `bg-blue-800`.
+- **Eksekusi UI**: `rounded-2xl`, tombol raksasa, mudah ditekan lansia.
 
-**Best For:** Government, healthcare, education, inclusive products, large audience, legal compliance, public
+#### B. Display Layar TV (`display.html`)
 
-**Key Effects:** Clear focus rings (3-4px), ARIA labels, skip links, responsive design, reduced motion, 44x44px touch targets
+- **Format**: Layar penuh dengan `bg-slate-50` bersih.
+- **Grid Loket**: Header menggunakan balok tegas warna `bg-blue-800 text-white`. Bagian dalam menampilkan kartu putih luas tanpa gradien (rata, jelas).
+- **Notifikasi TV**: Jika antrean dipanggil, jangan gunakan _neon/glow_, melainkan bingkai ring tegas `ring-4 ring-amber-500 animate-pulse` yang menimpa `bg-blue-800` menjadi `bg-amber-500` sementara waktu.
 
-### Page Pattern
+#### C. Dashboard Admin (`admin.html`)
 
-**Pattern Name:** Trust & Authority + Conversion
+- **Sidebar Khusus**: `bg-blue-900` dengan elemen logo `bg-white p-1.5 rounded-lg`. Latar aktif nav menggunakan `var(--color-accent)` (`#0088cc`).
+- **Dashboard Layout**: Latar ruang utama abu paling muda (`bg-slate-50`).
+- **Standardisasi Header Halaman**:
 
-- **Conversion Strategy:** Security badges. Case studies. Transparent pricing. Low-friction form. Provide pause/stop and stop the logo carousel on focus, hover, and reduced motion. Previous/next controls provide the keyboard equivalent; pause offscreen/hidden and render a static logo set under reduced motion.
-- **CTA Placement:** Contact Sales / Get Quote (primary) + Nav
-- **Section Order:** Hero (mission/credibility) > Proof (logos, certs, stats) > Solution overview > Clear CTA path
-
----
-
-## Anti-Patterns (Do NOT Use)
-
-- ❌ Playful design
-- ❌ Hidden credentials
-- ❌ AI purple/pink gradients
-
-### Additional Forbidden Patterns
-
-- ❌ **Emojis as icons** — Use SVG icons (Heroicons, Lucide, Simple Icons)
-- ❌ **Missing cursor:pointer** — All clickable elements must have cursor:pointer
-- ❌ **Layout-shifting hovers** — Avoid scale transforms that shift layout
-- ❌ **Low contrast text** — Maintain 4.5:1 minimum contrast ratio
-- ❌ **Instant state changes** — Always use transitions (150-300ms)
-- ❌ **Invisible focus states** — Focus states must be visible for a11y
+```html
+<header class="bg-white border-b border-slate-200 shadow-sm py-4 px-6 flex flex-row items-center justify-between">
+  <div class="flex items-center gap-3">
+    <h1 class="text-xl font-bold text-slate-800 leading-tight">Overview</h1>
+  </div>
+</header>
+```
 
 ---
 
-## Pre-Delivery Checklist
+## 3. Pre-Delivery Checklist
 
 Before delivering any UI code, verify:
 
-- [ ] No emojis used as icons (use SVG instead)
-- [ ] All icons from consistent icon set (Heroicons/Lucide)
-- [ ] `cursor-pointer` on all clickable elements
-- [ ] Hover states with smooth transitions (150-300ms)
-- [ ] Light mode: text contrast 4.5:1 minimum
-- [ ] Focus states visible for keyboard navigation
-- [ ] `prefers-reduced-motion` respected
-- [ ] Responsive: 375px, 768px, 1024px, 1440px
-- [ ] No content hidden behind fixed navbars
-- [ ] No horizontal scroll on mobile
+- [ ] ❌ No emojis used as icons (use Lucide SVG exclusively).
+- [ ] ❌ No layout-shifting hovers or arbitrary color variables outside the Tailwind palete.
+- [ ] ❌ NEVER use unreadable contrast; always test text on dark vs light backgrounds.
+- [ ] `cursor-pointer` is placed on all interactive target items.
+- [ ] Display widgets and layout adapt gracefully without horizontal scrolling on mobile (`overflow-x-hidden`).
