@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateOpts = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
     const timeOpts = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
     const ds = now.toLocaleDateString('id-ID', dateOpts);
-    const ts = now.toLocaleTimeString('id-ID', timeOpts);
+    const ts = now.toLocaleTimeString('id-ID', timeOpts).replace(/\./g, ':');
     timeEl.textContent = `${ds} — ${ts} WITA`;
   }
   updateHeaderTime();
@@ -331,9 +331,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
       const waDateObj = item.waktu_ambil ? new Date(item.waktu_ambil) : null;
       const waDateStr = waDateObj ? waDateObj.toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: '2-digit' }) : '-';
-      const wa = waDateObj ? waDateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
-      const wp = item.waktu_panggil ? new Date(item.waktu_panggil).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
-      const ws = item.waktu_selesai ? new Date(item.waktu_selesai).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+      const wa = waDateObj ? waDateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':') : '-';
+      const wp = item.waktu_panggil ? new Date(item.waktu_panggil).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':') : '-';
+      const ws = item.waktu_selesai ? new Date(item.waktu_selesai).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':') : '-';
 
       let b = 'bg-slate-100 text-slate-500';
       if (item.status === 'selesai') b = 'bg-emerald-100 text-emerald-700';
@@ -580,9 +580,9 @@ document.addEventListener('DOMContentLoaded', () => {
             (item.status || '').toUpperCase(),
             item.loket?.nama_loket || '-',
             item.petugas || '-',
-            item.waktu_ambil ? new Date(item.waktu_ambil).toLocaleTimeString('id-ID') : '-',
-            item.waktu_panggil ? new Date(item.waktu_panggil).toLocaleTimeString('id-ID') : '-',
-            item.waktu_selesai ? new Date(item.waktu_selesai).toLocaleTimeString('id-ID') : '-',
+            item.waktu_ambil ? new Date(item.waktu_ambil).toLocaleTimeString('id-ID').replace(/\./g, ':') : '-',
+            item.waktu_panggil ? new Date(item.waktu_panggil).toLocaleTimeString('id-ID').replace(/\./g, ':') : '-',
+            item.waktu_selesai ? new Date(item.waktu_selesai).toLocaleTimeString('id-ID').replace(/\./g, ':') : '-',
             waitTimeStr,
             svcTimeStr,
           ]);
@@ -1093,7 +1093,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const tr = document.createElement('tr');
       tr.className = 'hover:bg-slate-50 transition-colors';
       tr.innerHTML = `
-        <td class="px-6 py-4 text-xs font-mono text-slate-500">${ev.time.toLocaleTimeString('id-ID')}</td>
+        <td class="px-6 py-4 text-xs font-mono text-slate-500">${ev.time.toLocaleTimeString('id-ID').replace(/\./g, ':')}</td>
         <td class="px-6 py-4 font-bold text-slate-700">${ev.ticket}</td>
         <td class="px-6 py-4 text-xs text-slate-600">${ev.actor}</td>
         <td class="px-6 py-4">

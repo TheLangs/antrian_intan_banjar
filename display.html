@@ -7,19 +7,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="assets/css/custom.css" />
   </head>
-  <body class="bg-slate-100 min-h-screen flex flex-col overflow-hidden selection:bg-blue-200 font-sans">
-    <!-- Top Header Full Width -->
-    <header class="bg-blue-900 text-white shadow-md px-10 py-5 flex items-center justify-between z-10 shrink-0">
+  <body class="bg-gradient-to-br from-slate-900 via-[#0a192f] to-[#113a5d] min-h-screen flex flex-col overflow-hidden selection:bg-cyan-200/30 font-sans">
+    <!-- Top Header Full Width (Glass) -->
+    <header class="bg-white/5 backdrop-blur-md border-b border-white/10 text-white shadow-xl px-10 py-5 flex items-center justify-between z-10 shrink-0">
       <div class="flex items-center gap-6 relative z-10">
-        <img src="assets/images/logo-intan-banjar.png" alt="Logo Intan Banjar" class="w-16 h-16 object-contain drop-shadow-sm" />
+        <img src="assets/images/logo-intan-banjar.png" alt="Logo Intan Banjar" class="w-16 h-16 object-contain drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)]" />
         <div>
-          <h1 class="text-3xl font-extrabold tracking-tight text-white drop-shadow-sm">PT Air Minum Intan Banjar (Perseroda)</h1>
-          <p class="text-blue-200 text-sm font-bold mt-1 uppercase tracking-[0.15em]">Sistem Layanan Pelanggan</p>
+          <h1 class="text-3xl font-extrabold tracking-tight text-white drop-shadow-md">PT Air Minum Intan Banjar (Perseroda)</h1>
+          <p class="text-cyan-300 text-sm font-bold mt-1 uppercase tracking-[0.15em] drop-shadow-sm">Sistem Layanan Pelanggan</p>
         </div>
       </div>
       <div class="text-right relative z-10">
-        <h2 id="clock" class="text-5xl font-black tabular-nums tracking-tighter text-white drop-shadow-sm">00:00:00</h2>
-        <p id="date" class="text-blue-200 text-sm font-bold mt-1 tracking-wide">Hari, Tanggal Bulan Tahun</p>
+        <h2 id="clock" class="text-5xl font-black tabular-nums tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white to-cyan-200 drop-shadow-lg">00:00:00</h2>
+        <p id="date" class="text-cyan-300 text-sm font-bold mt-1 tracking-wide">Hari, Tanggal Bulan Tahun</p>
       </div>
     </header>
 
@@ -32,28 +32,32 @@
           <!-- Dynamically injected via JS -->
         </div>
 
-        <!-- Media Player Container -->
-        <div id="media-container" class="bg-black rounded-2xl shadow-lg flex-grow overflow-hidden relative flex items-center justify-center">
-          <p class="text-slate-600 font-bold tracking-[0.2em] text-xl">MENUNGGU MEDIA...</p>
+        <!-- Media Player Container (Glass) -->
+        <div id="media-container" class="bg-black/40 backdrop-blur-md rounded-[2rem] shadow-2xl border border-white/10 flex-grow overflow-hidden relative flex items-center justify-center">
+          <p class="text-cyan-400 font-bold tracking-[0.2em] text-xl animate-pulse">MENUNGGU MEDIA...</p>
         </div>
       </section>
 
-      <!-- Right Column: Queue History Sidebar -->
-      <aside class="col-span-4 bg-white rounded-2xl shadow-lg flex flex-col overflow-hidden border border-slate-200 h-full min-h-0">
-        <div class="bg-blue-900 border-b border-blue-950 text-white p-5 shadow-sm z-10 shrink-0 text-center flex items-center justify-center">
-          <h3 class="text-xl font-bold tracking-widest uppercase">Baru Dipanggil</h3>
+      <!-- Right Column: Queue History Sidebar (Glass) -->
+      <aside class="col-span-4 bg-white/5 backdrop-blur-lg rounded-[2rem] shadow-2xl flex flex-col overflow-hidden border border-white/10 h-full min-h-0">
+        <div class="bg-white/10 border-b border-white/10 text-white p-5 shadow-sm z-10 shrink-0 text-center flex items-center justify-center">
+          <h3 class="text-xl font-bold tracking-widest uppercase text-cyan-50 drop-shadow-sm">Baru Dipanggil</h3>
         </div>
-        <div id="queue-history-list" class="flex-grow overflow-y-hidden relative p-4 flex flex-col gap-3 bg-slate-50">
+        <div id="queue-history-list" class="flex-grow overflow-y-hidden relative p-4 flex flex-col gap-3 bg-transparent">
           <!-- Activity list dynamically stacked via JS -->
         </div>
       </aside>
     </main>
 
-    <!-- Footer Running Text -->
-    <footer class="bg-blue-950 border-t border-slate-800 shrink-0 shadow-xl overflow-hidden flex items-center justify-start z-10 w-full relative h-[70px]">
-      <div class="bg-amber-500 text-slate-900 h-full px-6 flex items-center justify-center shadow-lg z-20 shrink-0 text-lg font-black uppercase tracking-widest border-r border-amber-600">PENGUMUMAN</div>
+    <!-- Footer Running Text (Glass) -->
+    <footer class="bg-black/30 backdrop-blur-2xl border-t border-white/10 shrink-0 shadow-2xl overflow-hidden flex items-center justify-start z-10 w-full relative h-[70px]">
+      <div
+        class="bg-gradient-to-r from-cyan-600 to-blue-600 text-white h-full px-8 flex items-center justify-center shadow-[5px_0_15px_rgba(0,0,0,0.3)] z-20 shrink-0 text-lg font-black uppercase tracking-widest border-r border-white/20 relative">
+        INFO
+        <div class="absolute inset-0 bg-white/10 pointer-events-none"></div>
+      </div>
       <div class="flex-grow flex items-center mx-6 w-full h-full relative z-0">
-        <div id="tv-marquee" class="animate-[marquee_25s_linear_infinite] whitespace-nowrap text-amber-300 text-3xl font-semibold tracking-wide absolute">
+        <div id="tv-marquee" class="animate-[marquee_25s_linear_infinite] whitespace-nowrap text-cyan-50 text-3xl font-semibold tracking-wide absolute drop-shadow-md">
           Selamat Datang di PT Air Minum Intan Banjar (Perseroda). Harap siapkan nomor antrean Anda. Pelayanan loket dimulai dari pukul 08:00 hingga 15:00. Mohon menunggu dengan tertib di area yang telah disediakan.
         </div>
       </div>
@@ -97,6 +101,6 @@
       }
     </style>
 
-    <script type="module" src="assets/js/display.js"></script>
+    <script type="module" src="assets/js/display.js?v=2"></script>
   </body>
 </html>

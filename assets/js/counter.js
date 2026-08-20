@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     data.forEach((item) => {
       const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
-      const timeStr = new Date(item.waktu_ambil).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const timeStr = new Date(item.waktu_ambil).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':');
 
       const div = document.createElement('div');
       div.className = 'bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm hover:border-blue-200 transition-colors';
