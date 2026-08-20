@@ -7,6 +7,50 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="assets/css/custom.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+      .thermal-ticket {
+        background-color: #ffffff;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+        padding: 32px 24px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+      .thermal-text {
+        color: #000000;
+        font-family: 'Space Mono', monospace;
+        text-align: center;
+      }
+      .thermal-divider {
+        border-top: 2px dashed #000000;
+        margin: 24px 0;
+      }
+      .material-symbols-outlined {
+        font-variation-settings:
+          'FILL' 1,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+        color: #000000;
+      }
+      @media print {
+        @page {
+          margin: 0;
+          size: auto;
+        }
+        body {
+          background-color: #ffffff;
+        }
+        .thermal-ticket {
+          box-shadow: none;
+          padding: 10px;
+          max-width: 100%;
+        }
+      }
+    </style>
   </head>
   <body class="min-h-screen flex flex-col bg-slate-50 relative selection:bg-blue-200">
     <!-- Standar Header Komponen Intan Banjar -->
@@ -101,14 +145,54 @@
       </div>
     </main>
 
-    <!-- Invisible Print Area for Thermal Printer -->
-    <div id="print-area" class="hidden" style="width: 58mm; padding: 10px; text-align: center; font-family: monospace; background: white; color: black !important">
-      <h2 style="font-size: 14px; margin-bottom: 5px; font-weight: bold">PT Air Minum Intan Banjar</h2>
-      <p style="font-size: 10px; margin-bottom: 15px">Pelayanan Kasir</p>
-      <p style="font-size: 10px; margin-bottom: 5px">Nomor Antrean Anda:</p>
-      <h1 style="font-size: 32px; font-weight: bold; margin: 10px 0" id="print-no">A-000</h1>
-      <p style="font-size: 10px; margin-top: 15px">Silakan tunggu panggilan loket.</p>
-      <p style="font-size: 8px; margin-top: 10px; border-top: 1px dashed #000; padding-top: 5px" id="print-time"></p>
+    <!-- Print Area for Thermal Printer -->
+    <div id="print-area" class="hidden thermal-ticket flex-col">
+      <!-- Header -->
+      <div class="flex flex-col items-center justify-center gap-2 mb-4">
+        <span class="material-symbols-outlined text-4xl mb-1">water_drop</span>
+        <h1 class="thermal-text font-bold text-xl uppercase leading-tight">PT. AIR MINUM<br />INTAN BANJAR</h1>
+        <p class="thermal-text text-sm mt-2">Sistem Informasi Manajemen Antrean Hybrid</p>
+      </div>
+
+      <div class="thermal-divider"></div>
+
+      <!-- Main Content -->
+      <div class="flex flex-col items-center py-4">
+        <p class="thermal-text text-sm uppercase mb-2">Nomor Antrean Anda</p>
+        <div id="print-no" class="thermal-text text-7xl font-bold tracking-tight mb-4" style="font-variant-numeric: tabular-nums">A-000</div>
+        <div class="px-4 py-2 border-2 border-black rounded-lg">
+          <p class="thermal-text font-bold text-sm uppercase">Pendaftaran & Pembayaran Umum</p>
+        </div>
+      </div>
+
+      <div class="thermal-divider"></div>
+
+      <!-- Meta Data -->
+      <div class="flex flex-col gap-2">
+        <div class="flex justify-center items-center w-full">
+          <span id="print-time" class="thermal-text text-xs text-center w-full font-bold"></span>
+        </div>
+      </div>
+
+      <div class="thermal-divider"></div>
+
+      <!-- QR Code Section -->
+      <div class="flex flex-col items-center py-2">
+        <div class="w-32 h-32 bg-black flex items-center justify-center p-2 mb-3">
+          <div id="print-qr-target" class="w-full h-full bg-white flex items-center justify-center"></div>
+        </div>
+        <p class="thermal-text text-xs font-bold uppercase mt-2">Scan untuk Pantau di Smartphone</p>
+      </div>
+
+      <div class="thermal-divider"></div>
+
+      <!-- Footer -->
+      <div class="flex flex-col items-center mt-2 text-center px-4">
+        <p class="thermal-text text-xs leading-relaxed">
+          Terima kasih atas kunjungan Anda.<br />
+          Silakan duduk dan tunggu panggilan.
+        </p>
+      </div>
     </div>
 
     <!-- loading overlay -->

@@ -55,15 +55,36 @@ document.addEventListener('DOMContentLoaded', () => {
       qrContainer.classList.add('hidden');
       qrContainer.innerHTML = ''; // clear
 
+      // Fetch base URL for tracking
+      let pathSegments = window.location.pathname.split('/');
+      pathSegments.pop();
+      const baseURL = window.location.origin + pathSegments.join('/');
+      const trackerUrl = `${baseURL}/ticket.html?token=${data.access_token}`;
+
       // Prep print area
       printArea.classList.remove('hidden');
+      printArea.classList.add('flex');
       printNo.textContent = data.nomor_lengkap;
-      printTime.textContent = new Date().toLocaleString('id-ID');
+
+      const dateOptions = { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+      printTime.textContent = new Date().toLocaleDateString('id-ID', dateOptions).replace(/\./g, ':');
+
+      const printQrContainer = document.getElementById('print-qr-target');
+      printQrContainer.innerHTML = '';
+      new QRCode(printQrContainer, {
+        text: trackerUrl,
+        width: 100,
+        height: 100,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.L,
+      });
 
       // Execute native print
       setTimeout(() => {
         window.print();
         printArea.classList.add('hidden');
+        printArea.classList.remove('flex');
       }, 500);
     } else if (metode === 'qr') {
       successTitle.textContent = 'Scan QR Code';
