@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnRefresh = document.getElementById('btn-refresh');
 
   const cntMenunggu = document.getElementById('cnt-menunggu');
+  const cntMenungguBadge = document.getElementById('cnt-menunggu-badge');
+  const listMenunggu = document.getElementById('list-menunggu');
   const listTerlewat = document.getElementById('list-terlewat');
   const loader = document.getElementById('loader');
 
@@ -212,10 +214,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
-    const { count, error } = await supabase.from('antrian').select('*', { count: 'exact', head: true }).eq('status', 'menunggu').gte('waktu_ambil', todayStart.toISOString());
+    const { data, count, error } = await supabase
+      .from('antrian')
+      .select('id_antrian, nomor_antrian, kode_antrian, waktu_ambil', { count: 'exact' })
+      .eq('status', 'menunggu')
+      .gte('waktu_ambil', todayStart.toISOString())
+      .order('id_antrian', { ascending: true });
 
-    if (!error && count !== null) {
-      cntMenunggu.textContent = count;
+    if (!error) {
+      if (count !== null) {
+        cntMenunggu.textContent = count;
+        if (cntMenungguBadge) cntMenungguBadge.textContent = count;
+      }
+
+      if (listMenunggu) {
+        listMenunggu.innerHTML = '';
+        if (!data || data.length === 0) {
+          listMenunggu.innerHTML = '<div class="text-center p-6 text-text-muted text-[13px] font-medium">Tidak ada antrean menunggu.</div>';
+        } else {
+          data.forEach((item) => {
+            const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
+            const timeStr = new Date(item.waktu_ambil).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':');
+
+            const div = document.createElement('div');
+            div.className = 'flex items-center justify-between p-3 rounded-lg bg-surface-hover border border-transparent transition-colors';
+            div.innerHTML = `
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded bg-surface border border-border flex items-center justify-center font-bold text-text-primary text-[15px]">
+                    ${noLengkap}
+                </div>
+                <div>
+                  <div class="font-semibold text-[14px] text-text-primary">Menunggu Dipanggil</div>
+                  <div class="font-medium text-[12px] text-text-muted">Ambil: ${timeStr}</div>
+                </div>
+              </div>
+            `;
+            listMenunggu.appendChild(div);
+          });
+        }
+      }
     }
   }
 

@@ -166,15 +166,26 @@
           </div>
 
           <!-- Sidebar Area (Right) -->
-          <div class="lg:col-span-4 flex flex-col gap-4">
-            <div class="bg-surface rounded-xl card-shadow p-6 flex-1 flex flex-col h-[500px]">
-              <div class="flex items-center justify-between mb-4 border-b border-border pb-4">
-                <h3 class="font-bold text-[18px] text-text-primary">Antrean Terlewat</h3>
-                <span class="bg-surface-container px-3 py-1 rounded-full text-[11px] font-bold tracking-wider text-text-secondary uppercase">Membutuhkan Tindakan</span>
+          <div class="lg:col-span-4 flex flex-col gap-5 h-[560px]">
+            <!-- Antrean Menunggu -->
+            <div class="bg-surface rounded-xl card-shadow p-5 flex flex-col h-1/2">
+              <div class="flex items-center justify-between mb-3 border-b border-border pb-3">
+                <h3 class="font-bold text-[17px] text-text-primary">Antrean Menunggu</h3>
+                <span class="bg-surface-container px-3 py-1 rounded-full text-[11px] font-bold tracking-wider text-text-secondary uppercase"><span id="cnt-menunggu-badge">0</span> Total</span>
               </div>
-              <div id="list-terlewat" class="flex-grow overflow-y-auto pr-2 space-y-3">
-                <!-- list generated dynamically -->
-                <div class="text-center p-6 text-text-muted text-[13px] font-medium">Tidak ada antrean terlewat hari ini.</div>
+              <div id="list-menunggu" class="flex-grow overflow-y-auto pr-2 space-y-2.5">
+                <div class="text-center p-6 text-text-muted text-[13px] font-medium">Tidak ada antrean menunggu.</div>
+              </div>
+            </div>
+
+            <!-- Antrean Terlewat -->
+            <div class="bg-surface rounded-xl card-shadow p-5 flex flex-col h-1/2">
+              <div class="flex items-center justify-between mb-3 border-b border-border pb-3">
+                <h3 class="font-bold text-[17px] text-text-primary">Antrean Terlewat</h3>
+                <span class="bg-surface-container px-3 py-1 rounded-full text-[11px] font-bold tracking-wider text-text-secondary uppercase cursor-help" title="Membutuhkan Tindakan">Action</span>
+              </div>
+              <div id="list-terlewat" class="flex-grow overflow-y-auto pr-2 space-y-2.5">
+                <div class="text-center p-6 text-text-muted text-[13px] font-medium">Tidak ada antrean terlewat.</div>
               </div>
             </div>
           </div>
