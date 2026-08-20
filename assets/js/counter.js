@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  document.getElementById('header-info').textContent = `Loket ${idLoket} | Petugas: ${namaPetugas}`;
+  document.getElementById('header-info').innerHTML = `Loket ${idLoket} <span class="text-text-secondary text-[14px] ml-2 font-normal">• Petugas: ${namaPetugas}</span>`;
 
   // UI Elements
   const elActiveNomor = document.getElementById('active-nomor');
@@ -153,16 +153,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       const timeStr = new Date(item.waktu_ambil).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':');
 
       const div = document.createElement('div');
-      div.className = 'bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm hover:border-blue-200 transition-colors';
+      div.className = 'flex items-center justify-between p-3 rounded-lg bg-surface-hover border border-transparent hover:border-border transition-colors';
       div.innerHTML = `
-                <div>
-                    <p class="font-bold text-slate-700 text-lg">${noLengkap}</p>
-                    <p class="text-[10px] text-slate-400">Waktu Ambil: ${timeStr}</p>
-                </div>
-                <button class="btn-panggil-terlewat bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold px-3 py-2 rounded-lg transition-colors" data-id="${item.id_antrian}">
-                    Panggil Lagi
-                </button>
-            `;
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded bg-surface border border-border flex items-center justify-center font-bold text-text-primary text-[15px]">
+                  ${noLengkap}
+              </div>
+              <div>
+                  <div class="font-semibold text-[14px] text-text-primary">Terlewat</div>
+                  <div class="font-medium text-[12px] text-text-muted">Ambil: ${timeStr}</div>
+              </div>
+            </div>
+            <button class="btn-panggil-terlewat text-primary hover:bg-primary-fixed p-2 rounded-full transition-colors flex items-center justify-center" data-id="${item.id_antrian}" title="Panggil Ulang">
+              <span class="material-symbols-outlined text-[20px]">replay</span>
+            </button>
+        `;
       listTerlewat.appendChild(div);
     });
 

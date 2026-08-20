@@ -1,78 +1,195 @@
 <!doctype html>
 <html lang="id">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Panel Kasir - PT Air Minum Intan Banjar</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="assets/css/custom.css" />
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Counter Operator Dashboard - SIMAH</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Extending the snippet CSS explicitly for this page -->
+    <script>
+      if (window.tailwind) {
+        tailwind.config = {
+          darkMode: 'class',
+          theme: {
+            extend: {
+              colors: {
+                surface: '#FFFFFF',
+                info: '#0284C7',
+                'text-muted': '#94A3B8',
+                outline: '#727784',
+                'error-bg': '#FEF2F2',
+                border: '#E2E8F0',
+                primary: '#004e9f',
+                'on-primary': '#ffffff',
+                'success-bg': '#ECFDF5',
+                'surface-container': '#ecedf6',
+                'text-primary': '#0F172A',
+                warning: '#F59E0B',
+                'accent-water': '#0284C7',
+                background: '#F8FAFC',
+                'surface-hover': '#F1F5F9',
+                'surface-tint': '#005cba',
+                'text-secondary': '#64748B',
+                success: '#10B981',
+                error: '#EF4444',
+                'primary-container': '#0066cc',
+                'primary-fixed': '#d7e3ff',
+              },
+              fontFamily: {
+                'body-sm': ["'Inter'", 'sans-serif'],
+                'kpi-display': ["'Inter'", 'sans-serif'],
+                'headline-sm': ["'Inter'", 'sans-serif'],
+                'body-md': ["'Inter'", 'sans-serif'],
+                'label-badge': ["'Inter'", 'sans-serif'],
+                'headline-md': ["'Inter'", 'sans-serif'],
+              },
+            },
+          },
+        };
+      }
+    </script>
+    <style>
+      body {
+        background-color: #f8fafc;
+        font-family: 'Inter', sans-serif;
+      }
+      .material-symbols-outlined {
+        font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+      }
+      .fill-icon {
+        font-variation-settings:
+          'FILL' 1,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+      }
+      .card-shadow {
+        box-shadow:
+          0 1px 3px 0 rgba(0, 0, 0, 0.1),
+          0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      }
+      .ambient-shadow {
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+    </style>
   </head>
-  <body class="bg-slate-50 min-h-screen flex flex-col selection:bg-blue-200">
-    <header class="bg-white border-b border-slate-200 shadow-sm py-4 px-6 flex items-center justify-between z-10 sticky top-0">
-      <div class="flex items-center gap-3">
-        <img src="assets/images/logo-intan-banjar.png" alt="Logo Intan Banjar" class="w-10 h-10 object-contain" />
-        <div>
-          <h1 class="text-lg font-bold text-slate-800 leading-tight">Panel Operasional Kasir</h1>
-          <p class="text-xs text-slate-500 font-medium" id="header-info">Loket - | Petugas: -</p>
+  <body class="text-text-primary text-[14px] h-screen overflow-hidden flex bg-background">
+    <main class="flex-1 flex flex-col h-full relative z-0">
+      <header class="bg-surface border-b border-border flex justify-between items-center h-16 px-6 fixed top-0 right-0 z-20 w-full left-0">
+        <div class="text-[16px] font-semibold text-text-primary flex items-center gap-3">
+          <img src="assets/images/logo-intan-banjar.png" alt="Logo Intan Banjar" class="w-8 h-8 object-contain" />
+          Sistem Informasi Manajemen Antrean Hybrid
         </div>
-      </div>
-      <div class="flex items-center gap-4">
-        <span id="conn-status" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-          <span id="conn-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-ping-slow"></span>
-          Online
-        </span>
-        <button id="btn-logout" class="bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 font-semibold text-sm px-4 py-2 rounded-lg transition-colors border border-slate-200 hover:border-red-200">Akhiri Sesi</button>
-      </div>
-    </header>
-
-    <main class="flex-grow p-6 flex gap-6 max-w-7xl mx-auto w-full relative h-[calc(100vh-80px)]">
-      <!-- Main Actions -->
-      <div class="w-2/3 flex flex-col">
-        <div class="bg-white p-10 rounded-3xl shadow-sm border border-slate-200 flex-grow flex flex-col items-center justify-center relative overflow-hidden">
-          <h2 class="text-slate-500 font-semibold tracking-widest uppercase text-sm mb-4">Sedang Dilayani</h2>
-
-          <div class="text-center w-full relative z-10">
-            <h1 id="active-nomor" class="text-[120px] font-black text-slate-800 leading-none tracking-tighter mb-10 transition-all">- - -</h1>
+        <div class="flex items-center gap-4">
+          <div id="conn-status" class="flex items-center gap-2 px-3 py-1 bg-success-bg rounded-full border border-success/20">
+            <div id="conn-dot" class="w-2.5 h-2.5 rounded-full bg-success animate-pulse"></div>
+            <span class="text-[12px] font-semibold text-success tracking-wide">Online</span>
           </div>
+          <button id="btn-logout" class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border hover:bg-error-bg hover:text-error hover:border-error/30 text-text-secondary transition-colors duration-150 shadow-sm">
+            <span class="material-symbols-outlined text-[20px]">logout</span>
+            <span class="text-[13px] font-semibold">Keluar</span>
+          </button>
+        </div>
+      </header>
 
-          <div id="btn-group-active" class="hidden flex gap-4 w-full max-w-lg relative z-10">
-            <button id="btn-selesai" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl shadow-sm hover:shadow-md transition-all">Selesai</button>
-            <button id="btn-lewati" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-2xl shadow-sm hover:shadow-md transition-all">Lewati</button>
-          </div>
-
-          <div id="btn-group-next" class="w-full max-w-lg relative z-10 block mt-2">
-            <button id="btn-panggil" class="w-full bg-blue-800 hover:bg-blue-900 text-white font-bold py-5 rounded-2xl shadow-md hover:shadow-lg transition-all text-xl">Panggil Antrean Berikutnya</button>
+      <div class="mt-16 p-6 flex-1 overflow-y-auto overflow-x-hidden">
+        <!-- Operator Header Info -->
+        <div class="flex items-center justify-between mb-6 bg-surface p-6 rounded-xl card-shadow">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-accent-water/10 flex items-center justify-center text-accent-water">
+              <span class="material-symbols-outlined text-2xl fill-icon">support_agent</span>
+            </div>
+            <div>
+              <h2 id="header-info" class="font-semibold text-[20px] text-text-primary">Loket - <span class="text-text-secondary text-[14px] ml-2 font-normal">• Petugas: -</span></h2>
+              <p class="text-[13px] text-text-secondary mt-0.5">Terminal Pelayanan</p>
+            </div>
           </div>
         </div>
 
-        <div class="mt-6 flex justify-between items-center px-4">
-          <p class="text-sm text-slate-500 font-medium">Sisa antrean menunggu: <strong id="cnt-menunggu" class="text-slate-700 text-base">0</strong> orang</p>
-          <button id="btn-refresh" class="text-sm text-blue-600 hover:text-blue-800 font-semibold underline">Segarkan Data</button>
-        </div>
-      </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Main Action Area -->
+          <div class="lg:col-span-8 flex flex-col gap-4">
+            <div class="bg-surface rounded-xl card-shadow p-8 flex flex-col items-center justify-center relative overflow-hidden border-t-[5px] border-accent-water min-h-[450px]">
+              <div class="absolute -right-24 -top-24 w-64 h-64 bg-accent-water/5 rounded-full blur-3xl"></div>
+              <div class="absolute -left-24 -bottom-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
 
-      <!-- Sidebar / Terlewat -->
-      <div class="w-1/3 bg-white border border-slate-200 rounded-3xl shadow-sm flex flex-col overflow-hidden">
-        <div class="bg-slate-50 border-b border-slate-200 p-5">
-          <h3 class="font-bold text-slate-700 text-base">Daftar Antrean Terlewat</h3>
-          <p class="text-xs text-slate-500">Antrean yang dilewati hari ini</p>
-        </div>
+              <div class="text-center z-10 w-full flex flex-col items-center">
+                <span class="text-[13px] font-bold text-accent-water uppercase tracking-widest mb-4 block">Sedang Dilayani</span>
 
-        <div id="list-terlewat" class="flex-grow overflow-y-auto p-4 space-y-3 bg-slate-50">
-          <!-- list dynamically generated -->
-          <div class="text-center p-6 text-slate-400 text-sm font-medium">Tidak ada antrean terlewat.</div>
+                <div class="flex items-center justify-center gap-4 mb-4 mt-6">
+                  <div id="active-nomor" class="text-[120px] font-bold text-text-primary leading-none tracking-tighter tabular-nums transition-all">- - -</div>
+                </div>
+
+                <div class="inline-flex items-center gap-2 px-5 py-2.5 bg-surface-hover rounded-xl text-text-secondary text-[14px] font-medium mb-12 border border-border">
+                  <span class="material-symbols-outlined text-[18px]">groups</span>
+                  Sisa antrean menunggu: <strong id="cnt-menunggu" class="text-text-primary font-bold ml-1">0</strong> <span class="text-text-muted text-[13px]">orang</span>
+                </div>
+
+                <!-- Button group when active -->
+                <div id="btn-group-active" class="hidden grid-cols-2 gap-4 w-full max-w-md mx-auto relative z-10">
+                  <button id="btn-selesai" class="col-span-1 bg-success-bg border border-success/20 hover:bg-success/10 text-success font-semibold text-[15px] py-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
+                    <span class="material-symbols-outlined">check_circle</span> Selesai
+                  </button>
+                  <button
+                    id="btn-lewati"
+                    class="col-span-1 bg-surface border border-border hover:bg-error-bg hover:text-error hover:border-error/30 text-text-secondary font-semibold text-[15px] py-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
+                    <span class="material-symbols-outlined">skip_next</span> Lewati (Terlewat)
+                  </button>
+                </div>
+
+                <!-- Button group when NO active ticket -->
+                <div id="btn-group-next" class="block w-full max-w-md mx-auto relative z-10">
+                  <button
+                    id="btn-panggil"
+                    class="w-full bg-primary hover:bg-surface-tint text-on-primary font-semibold text-[18px] py-5 rounded-2xl flex items-center justify-center gap-2 transition-colors ambient-shadow hover:-translate-y-0.5 transform duration-200">
+                    <span class="material-symbols-outlined text-2xl">campaign</span>
+                    Panggil Penantre Berikutnya
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center justify-end px-2">
+              <button id="btn-refresh" class="text-[14px] text-primary hover:underline flex items-center font-medium gap-1.5 transition-colors"><span class="material-symbols-outlined text-[18px]">refresh</span> Segarkan Data</button>
+            </div>
+          </div>
+
+          <!-- Sidebar Area (Right) -->
+          <div class="lg:col-span-4 flex flex-col gap-4">
+            <div class="bg-surface rounded-xl card-shadow p-6 flex-1 flex flex-col h-[500px]">
+              <div class="flex items-center justify-between mb-4 border-b border-border pb-4">
+                <h3 class="font-bold text-[18px] text-text-primary">Antrean Terlewat</h3>
+                <span class="bg-surface-container px-3 py-1 rounded-full text-[11px] font-bold tracking-wider text-text-secondary uppercase">Membutuhkan Tindakan</span>
+              </div>
+              <div id="list-terlewat" class="flex-grow overflow-y-auto pr-2 space-y-3">
+                <!-- list generated dynamically -->
+                <div class="text-center p-6 text-text-muted text-[13px] font-medium">Tidak ada antrean terlewat hari ini.</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
 
     <!-- Overlay Loader -->
-    <div id="loader" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center">
-      <div class="bg-white px-8 py-6 rounded-2xl shadow-xl flex flex-col items-center">
-        <div class="w-8 h-8 border-4 border-blue-200 border-t-blue-800 rounded-full animate-spin mb-4"></div>
-        <p class="text-sm font-semibold text-slate-700 mt-2">Memproses...</p>
+    <div id="loader" class="hidden fixed inset-0 z-50 bg-text-primary/40 backdrop-blur-sm flex items-center justify-center">
+      <div class="bg-surface px-8 py-6 rounded-2xl ambient-shadow flex flex-col items-center">
+        <div class="w-8 h-8 border-4 border-primary-fixed border-t-primary rounded-full animate-spin mb-4"></div>
+        <p class="text-[14px] font-semibold text-text-primary mt-2">Memproses...</p>
       </div>
     </div>
 
-    <script type="module" src="assets/js/counter.js?v=2"></script>
+    <script type="module" src="assets/js/counter.js?v=3"></script>
   </body>
 </html>
