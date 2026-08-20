@@ -39,19 +39,19 @@ document.addEventListener('DOMContentLoaded', () => {
         card.className = 'bg-white rounded-[2rem] shadow-xl border border-slate-200 flex flex-col overflow-hidden h-full relative transform transition-all duration-300';
         card.id = `card-loket-${id}`;
         card.innerHTML = `
-          <div class="bg-blue-800 text-white text-center py-5 transition-colors duration-300 z-10 shrink-0">
-             <h2 class="text-4xl font-bold tracking-widest">${loket.nama_loket.toUpperCase()}</h2>
+          <div class="bg-blue-800 text-white text-center py-4 md:py-5 transition-colors duration-300 z-10 shrink-0 w-full overflow-hidden">
+             <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold tracking-widest truncate px-2">${loket.nama_loket.toUpperCase()}</h2>
           </div>
-          <div class="flex-grow flex flex-col items-center justify-center bg-white relative pb-8 pt-6">
-             <span class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">Nomor Antrean</span>
-             <div class="text-[5rem] md:text-8xl xl:text-9xl font-black text-slate-800 leading-tight tracking-tight" id="disp-no-${id}">---</div>
+          <div class="flex-grow flex flex-col items-center justify-center bg-white relative pb-6 pt-4 px-2 overflow-hidden">
+             <span class="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-widest mb-1 md:mb-3 truncate w-full text-center">Nomor Antrean</span>
+             <div class="text-5xl md:text-6xl lg:text-7xl xl:text-[5.5rem] font-black text-slate-800 leading-none tracking-tight w-full text-center truncate" id="disp-no-${id}">---</div>
           </div>
-          <div class="absolute bottom-0 w-full bg-sky-50 py-4 px-8 border-t border-slate-100 flex items-center justify-between">
-             <span class="text-sm font-bold text-slate-500 uppercase flex items-center gap-2">
-               <svg class="w-5 h-5 text-blue-800" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
-               Petugas
+          <div class="absolute bottom-0 w-full bg-sky-50 py-3 md:py-4 px-4 md:px-8 border-t border-slate-100 flex items-center justify-between overflow-hidden">
+             <span class="text-xs md:text-sm font-bold text-slate-500 uppercase flex items-center gap-1 md:gap-2 shrink-0">
+               <svg class="w-4 h-4 md:w-5 md:h-5 text-blue-800" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+               <span class="hidden md:inline">Petugas</span>
              </span>
-             <span class="text-base font-black text-blue-800 uppercase tracking-widest" id="disp-nama-${id}">-</span>
+             <span class="text-sm md:text-base font-black text-blue-800 uppercase tracking-widest truncate text-right pl-2" id="disp-nama-${id}">-</span>
           </div>
         `;
         displayGrid.appendChild(card);
@@ -336,13 +336,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = document.createElement('div');
     el.className = 'bg-white p-5 rounded-2xl shadow-sm border border-slate-200 border-l-[6px] border-l-blue-500 flex items-center justify-between shrink-0 transform transition-all duration-500 opacity-0 -translate-y-4';
     el.innerHTML = `
-      <div>
-         <span class="text-[12px] font-bold text-slate-400 block tracking-widest mb-1 uppercase">${timeStr}</span>
-         <span class="text-3xl font-black text-slate-800 leading-none tracking-tight">${nomorLengkap}</span>
+      <div class="min-w-0 overflow-hidden pr-2">
+         <span class="text-[10px] xl:text-[12px] font-bold text-slate-400 block tracking-widest mb-1 uppercase truncate">${timeStr}</span>
+         <span class="text-xl xl:text-3xl font-black text-slate-800 leading-none tracking-tight truncate w-full block">${nomorLengkap}</span>
       </div>
-      <div class="text-right flex flex-col items-end">
-         <span class="text-xs font-semibold text-slate-500 block break-words uppercase mb-1">${namaPetugas.split(' ')[0]}</span>
-         <span class="text-sm font-bold bg-sky-50 text-blue-800 px-3 py-1 rounded-lg border border-sky-100">LOKET ${idLoket}</span>
+      <div class="text-right flex flex-col items-end shrink-0 pl-1">
+         <span class="text-[10px] xl:text-xs font-semibold text-slate-500 block break-words uppercase mb-1 max-w-[80px] xl:max-w-[120px] truncate text-ellipsis overflow-hidden">${namaPetugas.split(' ')[0]}</span>
+         <span class="text-xs xl:text-sm font-bold bg-sky-50 text-blue-800 px-2 xl:px-3 py-1 rounded-lg border border-sky-100 whitespace-nowrap">LOKET ${idLoket}</span>
       </div>
     `;
     container.prepend(el);
