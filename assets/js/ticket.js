@@ -120,7 +120,34 @@ document.addEventListener('DOMContentLoaded', async () => {
       case 'selesai':
       case 'terlewat':
       case 'batal':
+        const dmIconBg = document.getElementById('dm-icon-bg');
+        const dmIcon = document.getElementById('dm-icon');
+        const dmTitle = document.getElementById('dm-title');
+        const dmDesc = document.getElementById('dm-desc');
+        const dmBtn = document.getElementById('dm-btn');
+
         doneMask.classList.remove('hidden');
+        doneMask.classList.add('flex');
+
+        if (data.status === 'terlewat' || data.status === 'batal') {
+          dmIconBg.className = 'w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-6';
+          dmIcon.textContent = 'warning';
+          dmTitle.className = 'text-2xl font-bold text-red-700 mb-2';
+          dmTitle.textContent = data.status === 'terlewat' ? 'Antrean Terlewat' : 'Antrean Dibatalkan';
+          dmDesc.className = 'text-sm font-medium text-red-600/80 mb-8 max-w-[250px] mx-auto';
+          dmDesc.textContent =
+            data.status === 'terlewat' ? 'Nomor Anda telah terlewat. Mohon tunggu area pendaftaran. Jika kondisi sudah siap, silakan konfirmasi ke petugas untuk dipanggil kembali.' : 'Nomor antrean Anda telah dibatalkan.';
+          dmBtn.className = 'bg-red-600 text-white hover:bg-red-700 text-sm font-bold px-8 py-3 rounded-full transition-colors shadow-sm';
+        } else {
+          // Default to selesai (success mode)
+          dmIconBg.className = 'w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6';
+          dmIcon.textContent = 'check_circle';
+          dmTitle.className = 'text-2xl font-bold text-emerald-700 mb-2';
+          dmTitle.textContent = 'Antrean Selesai';
+          dmDesc.className = 'text-sm font-medium text-slate-500 mb-8 max-w-[250px] mx-auto';
+          dmDesc.textContent = 'Pelayanan telah selesai. Terima kasih atas kunjungan Anda.';
+          dmBtn.className = 'bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-bold px-8 py-3 rounded-full transition-colors shadow-sm';
+        }
         break;
     }
   }

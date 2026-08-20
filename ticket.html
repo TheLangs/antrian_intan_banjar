@@ -106,12 +106,12 @@
 
         <!-- Done Mask -->
         <div id="done-mask" class="hidden bg-white/95 backdrop-blur-md rounded-xl p-8 flex-col items-center text-center shadow-lg border border-slate-200 z-10 w-full">
-          <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
-            <span class="material-symbols-outlined text-4xl">check_circle</span>
+          <div id="dm-icon-bg" class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
+            <span id="dm-icon" class="material-symbols-outlined text-4xl">check_circle</span>
           </div>
-          <h3 class="text-2xl font-bold text-emerald-700 mb-2">Antrean Selesai</h3>
-          <p class="text-sm font-medium text-slate-500 mb-8 max-w-[250px] mx-auto">Pelayanan telah selesai. Terima kasih atas kunjungan Anda.</p>
-          <button onclick="window.location.reload()" class="bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-bold px-8 py-3 rounded-full transition-colors shadow-sm">Tutup Laman</button>
+          <h3 id="dm-title" class="text-2xl font-bold text-emerald-700 mb-2">Antrean Selesai</h3>
+          <p id="dm-desc" class="text-sm font-medium text-slate-500 mb-8 max-w-[250px] mx-auto">Pelayanan telah selesai. Terima kasih atas kunjungan Anda.</p>
+          <button id="dm-btn" onclick="window.location.reload()" class="bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-bold px-8 py-3 rounded-full transition-colors shadow-sm">Tutup Laman</button>
         </div>
       </div>
     </main>
