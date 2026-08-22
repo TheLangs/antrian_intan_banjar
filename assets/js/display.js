@@ -99,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initDisplayGrid();
   fetchSettings();
+  fetchWaitingQueue();
   setupRealtime();
 
   function updateTime() {
@@ -327,34 +328,66 @@ document.addEventListener('DOMContentLoaded', () => {
     playNote(523.25, audioCtx.currentTime + 0.5, 0.8); // C5
   }
 
-  // --- Queue History Tracker ---
-  function pushToHistory(nomorLengkap, namaPetugas, idLoket) {
+  // --- Waiting Queue List Tracker ---
+  async function fetchWaitingQueue() {
     const container = document.getElementById('queue-history-list');
     if (!container) return;
-    const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-    const el = document.createElement('div');
-    el.className = 'bg-white p-5 rounded-2xl shadow-sm border border-slate-200 border-l-[6px] border-l-blue-500 flex items-center justify-between shrink-0 transform transition-all duration-500 opacity-0 -translate-y-4';
-    el.innerHTML = `
-      <div class="min-w-0 overflow-hidden pr-2">
-         <span class="text-[10px] xl:text-[12px] font-bold text-slate-400 block tracking-widest mb-1 uppercase truncate">${timeStr}</span>
-         <span class="text-xl xl:text-3xl font-black text-slate-800 leading-none tracking-tight truncate w-full block">${nomorLengkap}</span>
-      </div>
-      <div class="text-right flex flex-col items-end shrink-0 pl-1">
-         <span class="text-[10px] xl:text-xs font-semibold text-slate-500 block break-words uppercase mb-1 max-w-[80px] xl:max-w-[120px] truncate text-ellipsis overflow-hidden">${namaPetugas.split(' ')[0]}</span>
-         <span class="text-xs xl:text-sm font-bold bg-sky-50 text-blue-800 px-2 xl:px-3 py-1 rounded-lg border border-sky-100 whitespace-nowrap">LOKET ${idLoket}</span>
-      </div>
-    `;
-    container.prepend(el);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
 
-    // Animate in
-    setTimeout(() => {
-      el.classList.remove('opacity-0', '-translate-y-4');
-    }, 50);
+    try {
+      const { data, error } = await supabase
+        .from('antrian')
+        .select('id_antrian, nomor_antrian, kode_antrian, waktu_ambil')
+        .eq('status', 'menunggu')
+        .gte('waktu_ambil', todayStart.toISOString())
+        .order('id_antrian', { ascending: true })
+        .limit(10);
 
-    // Keep memory low
-    while (container.children.length > 10) {
-      container.removeChild(container.lastChild);
+      if (error) throw error;
+
+      container.innerHTML = '';
+      if (!data || data.length === 0) {
+        container.innerHTML = `
+          <div class="flex-grow flex flex-col items-center justify-center text-center p-6 text-slate-400 my-auto">
+            <div class="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+              <svg class="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <p class="font-bold text-sm uppercase tracking-wider text-slate-600">Semua Antrean Terlayani</p>
+            <p class="text-xs text-slate-400 mt-1">Tidak ada antrean yang menunggu</p>
+          </div>
+        `;
+        return;
+      }
+
+      data.forEach((item, index) => {
+        const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
+        const timeStr = new Date(item.waktu_ambil).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':');
+
+        const el = document.createElement('div');
+        el.className = 'bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 border-l-[6px] border-l-blue-600 flex items-center justify-between shrink-0 transition-all duration-300 hover:shadow-md';
+        el.innerHTML = `
+          <div class="min-w-0 overflow-hidden pr-2">
+             <div class="flex items-center gap-2 mb-1">
+               <span class="text-[10px] xl:text-[11px] font-bold bg-blue-50 text-blue-800 px-2 py-0.5 rounded uppercase tracking-wider">Antrean #${index + 1}</span>
+               <span class="text-[10px] xl:text-[11px] font-semibold text-slate-400 tracking-wide">Ambil: ${timeStr}</span>
+             </div>
+             <span class="text-2xl xl:text-3xl font-black text-slate-800 leading-none tracking-tight truncate w-full block">${noLengkap}</span>
+          </div>
+          <div class="text-right flex flex-col items-end shrink-0 pl-1">
+             <span class="text-xs xl:text-sm font-bold bg-amber-50 text-amber-700 px-2.5 xl:px-3 py-1 rounded-lg border border-amber-200/60 whitespace-nowrap flex items-center gap-1.5">
+               <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+               Menunggu
+             </span>
+          </div>
+        `;
+        container.appendChild(el);
+      });
+    } catch (e) {
+      console.error('Fetch Waiting Queue Err:', e);
     }
   }
 
@@ -364,22 +397,24 @@ document.addEventListener('DOMContentLoaded', () => {
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*',
           schema: 'public',
           table: 'antrian',
         },
         (payload) => {
-          const newData = payload.new;
-          if (newData.status === 'dipanggil') {
-            // Update exact UI
-            const noLengkap = `${newData.kode_antrian}-${String(newData.nomor_antrian).padStart(3, '0')}`;
-            updateCounterUI(newData.id_loket, noLengkap, newData.nama_petugas);
+          // Always refresh waiting queue list
+          fetchWaitingQueue();
 
-            // Populate Right Sidebar History
-            pushToHistory(noLengkap, newData.nama_petugas || 'Admin', newData.id_loket);
+          if (payload.eventType === 'UPDATE' || payload.event === 'UPDATE') {
+            const newData = payload.new;
+            if (newData && newData.status === 'dipanggil') {
+              // Update exact UI
+              const noLengkap = `${newData.kode_antrian}-${String(newData.nomor_antrian).padStart(3, '0')}`;
+              updateCounterUI(newData.id_loket, noLengkap, newData.nama_petugas);
 
-            // Trigger sound & visual
-            playCallingAnnouncement(newData.id_loket, noLengkap);
+              // Trigger sound & visual
+              playCallingAnnouncement(newData.id_loket, noLengkap);
+            }
           }
         },
       )

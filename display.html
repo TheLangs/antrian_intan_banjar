@@ -40,13 +40,13 @@
         </div>
       </section>
 
-      <!-- Right Column: Queue History Sidebar -->
+      <!-- Right Column: Waiting Queue Sidebar -->
       <aside class="col-span-4 bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 flex flex-col overflow-hidden border border-slate-200 h-full min-h-0">
         <div class="bg-blue-800 border-b border-blue-900 text-white px-5 py-6 shadow-sm z-10 shrink-0 text-center flex items-center justify-center">
-          <h3 class="text-xl font-bold tracking-[0.15em] uppercase text-white">Baru Dipanggil</h3>
+          <h3 class="text-xl font-bold tracking-[0.15em] uppercase text-white">Antrean Menunggu</h3>
         </div>
-        <div id="queue-history-list" class="flex-grow overflow-y-hidden relative p-5 flex flex-col gap-4 bg-slate-50">
-          <!-- Activity list dynamically stacked via JS -->
+        <div id="queue-history-list" class="flex-grow overflow-y-auto relative p-5 flex flex-col gap-4 bg-slate-50">
+          <!-- Waiting queue dynamically rendered via JS -->
         </div>
       </aside>
     </main>
@@ -99,6 +99,6 @@
       }
     </style>
 
-    <script type="module" src="assets/js/display.js?v=2"></script>
+    <script type="module" src="assets/js/display.js?v=3"></script>
   </body>
 </html>
