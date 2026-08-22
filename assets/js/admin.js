@@ -30,15 +30,363 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentReportData = [];
 
-  // Set default dates (Today) on initialization
-  const today = new Date();
-  const localToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-  document.querySelectorAll('.tab-date-start').forEach((el) => (el.value = localToday));
-  document.querySelectorAll('.tab-date-end').forEach((el) => (el.value = localToday));
+  // ══════════════════════════════════════════════════════════════
+  // CUSTOM DATE RANGE PICKER CONTROLLER (TAILWIND MODAL)
+  // ══════════════════════════════════════════════════════════════
+  const MONTH_NAMES = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-  // Events
-  document.querySelectorAll('.btn-apply-filter').forEach((btn) => btn.addEventListener('click', fetchData));
+  const dpModal = document.getElementById('dp-modal');
+  const dpMonthYearLabel = document.getElementById('dp-month-year-label');
+  const dpDaysGrid = document.getElementById('dp-days-grid');
+  const dpSummaryText = document.getElementById('dp-summary-text');
+  const dpBtnPrev = document.getElementById('dp-btn-prev-month');
+  const dpBtnNext = document.getElementById('dp-btn-next-month');
+  const dpBtnCancel = document.getElementById('dp-btn-cancel');
+  const dpBtnApply = document.getElementById('dp-btn-apply');
 
+  let activeDpContainer = null;
+  let tempStart = null;
+  let tempEnd = null;
+  let viewYear = new Date().getFullYear();
+  let viewMonth = new Date().getMonth();
+  let selectStep = 0; // 0: start not picked, 1: start picked, picking end
+
+  function formatShortDate(isoStr) {
+    if (!isoStr) return '';
+    const [y, m, d] = isoStr.split('-');
+    const mIdx = parseInt(m, 10) - 1;
+    return `${parseInt(d, 10)} ${SHORT_MONTHS[mIdx] || ''} ${y}`;
+  }
+
+  function getFormattedLabel(startStr, endStr) {
+    const today = new Date();
+    const todayStr = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    const yest = new Date(today.getTime() - 86400000 - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+
+    if (!startStr && !endStr) return `Hari Ini (${formatShortDate(todayStr)})`;
+    if (!endStr || startStr === endStr) {
+      if (startStr === todayStr) return `Hari Ini (${formatShortDate(startStr)})`;
+      if (startStr === yest) return `Kemarin (${formatShortDate(startStr)})`;
+      return formatShortDate(startStr);
+    }
+    return `${formatShortDate(startStr)} – ${formatShortDate(endStr)}`;
+  }
+
+  function updateModalSummary() {
+    if (!dpSummaryText) return;
+    if (!tempStart && !tempEnd) {
+      dpSummaryText.textContent = 'Pilih rentang tanggal';
+      return;
+    }
+    dpSummaryText.textContent = getFormattedLabel(tempStart, tempEnd);
+  }
+
+  function renderCalendarDays() {
+    if (!dpDaysGrid) return;
+    dpDaysGrid.innerHTML = '';
+    if (dpMonthYearLabel) {
+      dpMonthYearLabel.textContent = `${MONTH_NAMES[viewMonth]} ${viewYear}`;
+    }
+
+    const firstDayIndex = new Date(viewYear, viewMonth, 1).getDay(); // 0 is Sunday
+    const totalDaysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+    const prevMonthDays = new Date(viewYear, viewMonth, 0).getDate();
+    const todayStr = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+
+    // Leading days from prev month
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+      const d = prevMonthDays - i;
+      const m = viewMonth === 0 ? 11 : viewMonth - 1;
+      const y = viewMonth === 0 ? viewYear - 1 : viewYear;
+      const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      dpDaysGrid.appendChild(createDayElement(d, dateStr, true, false));
+    }
+
+    // Days in current month
+    for (let d = 1; d <= totalDaysInMonth; d++) {
+      const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const isToday = (dateStr === todayStr);
+      dpDaysGrid.appendChild(createDayElement(d, dateStr, false, isToday));
+    }
+
+    // Trailing days for next month
+    const totalRendered = firstDayIndex + totalDaysInMonth;
+    const remaining = (totalRendered <= 35) ? 35 - totalRendered : 42 - totalRendered;
+    for (let d = 1; d <= remaining; d++) {
+      const m = viewMonth === 11 ? 0 : viewMonth + 1;
+      const y = viewMonth === 11 ? viewYear + 1 : viewYear;
+      const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      dpDaysGrid.appendChild(createDayElement(d, dateStr, true, false));
+    }
+  }
+
+  function createDayElement(dayNum, dateStr, isOtherMonth, isToday) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.setAttribute('data-date', dateStr);
+
+    let isSelectedStart = (dateStr === tempStart);
+    let isSelectedEnd = (dateStr === tempEnd);
+    let isInRange = false;
+
+    if (tempStart && tempEnd && tempStart !== tempEnd) {
+      if (dateStr > tempStart && dateStr < tempEnd) {
+        isInRange = true;
+      }
+    }
+
+    let baseClass = 'h-8 w-full flex items-center justify-center text-xs font-semibold transition-colors ';
+    
+    if (isOtherMonth) {
+      baseClass += 'text-slate-300 hover:bg-slate-50 ';
+    } else {
+      baseClass += 'text-slate-700 hover:bg-blue-50 ';
+    }
+
+    if (isInRange) {
+      baseClass += '!bg-blue-50 !text-blue-900 ';
+    }
+
+    if (isSelectedStart && isSelectedEnd) {
+      baseClass += '!bg-blue-800 !text-white rounded-lg font-bold shadow-xs ';
+    } else if (isSelectedStart) {
+      baseClass += '!bg-blue-800 !text-white rounded-l-lg font-bold shadow-xs ';
+    } else if (isSelectedEnd) {
+      baseClass += '!bg-blue-800 !text-white rounded-r-lg font-bold shadow-xs ';
+    } else if (isToday && !isInRange) {
+      baseClass += 'border border-blue-400/50 rounded-lg text-blue-700 font-bold ';
+    } else if (!isInRange) {
+      baseClass += 'rounded-lg ';
+    }
+
+    btn.className = baseClass;
+    btn.textContent = dayNum;
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onDayClick(dateStr);
+    });
+
+    btn.addEventListener('mouseover', () => {
+      if (selectStep === 1 && tempStart && dateStr >= tempStart) {
+        highlightRangeHover(tempStart, dateStr);
+      }
+    });
+
+    return btn;
+  }
+
+  function onDayClick(dateStr) {
+    if (selectStep === 0) {
+      tempStart = dateStr;
+      tempEnd = dateStr;
+      selectStep = 1;
+    } else {
+      if (dateStr < tempStart) {
+        tempStart = dateStr;
+        tempEnd = dateStr;
+        selectStep = 1;
+      } else {
+        tempEnd = dateStr;
+        selectStep = 0;
+      }
+    }
+    renderCalendarDays();
+    updateModalSummary();
+  }
+
+  function highlightRangeHover(startIso, hoverIso) {
+    const buttons = dpDaysGrid.querySelectorAll('button[data-date]');
+    buttons.forEach((b) => {
+      const d = b.getAttribute('data-date');
+      const isStart = (d === startIso);
+      const isHover = (d === hoverIso);
+      const inBetween = (d > startIso && d < hoverIso);
+
+      if (inBetween) {
+        b.classList.add('!bg-blue-50', '!text-blue-900');
+        b.classList.remove('rounded-lg');
+      } else if (!isStart && !isHover) {
+        b.classList.remove('!bg-blue-50', '!text-blue-900');
+      }
+    });
+  }
+
+  function openDatepicker(container) {
+    activeDpContainer = container;
+    const startInp = container.querySelector('.tab-date-start');
+    const endInp = container.querySelector('.tab-date-end');
+
+    const todayStr = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    tempStart = (startInp && startInp.value) ? startInp.value : todayStr;
+    tempEnd = (endInp && endInp.value) ? endInp.value : tempStart;
+    selectStep = 0;
+
+    const [y, m] = tempStart.split('-');
+    viewYear = parseInt(y, 10) || new Date().getFullYear();
+    viewMonth = (parseInt(m, 10) - 1);
+    if (isNaN(viewMonth)) viewMonth = new Date().getMonth();
+
+    renderCalendarDays();
+    updateModalSummary();
+
+    // Position modal relative to trigger button
+    const triggerBtn = container.querySelector('.dp-trigger');
+    const rect = triggerBtn.getBoundingClientRect();
+    const modalWidth = 330;
+    
+    let left = rect.left;
+    if (left + modalWidth > window.innerWidth - 16) {
+      left = window.innerWidth - modalWidth - 16;
+    }
+    if (left < 16) left = 16;
+
+    let top = rect.bottom + 8;
+    if (top + 390 > window.innerHeight && rect.top - 390 > 10) {
+      top = rect.top - 390 - 8;
+    }
+
+    dpModal.style.top = `${top}px`;
+    dpModal.style.left = `${left}px`;
+    dpModal.classList.remove('hidden');
+  }
+
+  function closeDatepicker() {
+    if (dpModal) dpModal.classList.add('hidden');
+    activeDpContainer = null;
+  }
+
+  function applyDatepickerSelection() {
+    if (!activeDpContainer) return;
+    const startInp = activeDpContainer.querySelector('.tab-date-start');
+    const endInp = activeDpContainer.querySelector('.tab-date-end');
+    const labelEl = activeDpContainer.querySelector('.dp-label');
+
+    if (startInp) startInp.value = tempStart;
+    if (endInp) endInp.value = tempEnd;
+    if (labelEl) labelEl.textContent = getFormattedLabel(tempStart, tempEnd);
+
+    closeDatepicker();
+    fetchData();
+  }
+
+  // Presets Handlers
+  document.querySelectorAll('.dp-preset-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const preset = btn.getAttribute('data-preset');
+      const now = new Date();
+      const todayStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+
+      if (preset === 'today') {
+        tempStart = todayStr;
+        tempEnd = todayStr;
+      } else if (preset === 'yesterday') {
+        const yest = new Date(now.getTime() - 86400000 - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+        tempStart = yest;
+        tempEnd = yest;
+      } else if (preset === 'last7') {
+        const last7 = new Date(now.getTime() - (6 * 86400000) - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+        tempStart = last7;
+        tempEnd = todayStr;
+      } else if (preset === 'thismonth') {
+        const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        tempStart = new Date(firstOfMonth.getTime() - firstOfMonth.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+        tempEnd = todayStr;
+      }
+
+      selectStep = 0;
+      const [y, m] = tempStart.split('-');
+      viewYear = parseInt(y, 10);
+      viewMonth = parseInt(m, 10) - 1;
+
+      renderCalendarDays();
+      updateModalSummary();
+      applyDatepickerSelection();
+    });
+  });
+
+  if (dpBtnPrev) {
+    dpBtnPrev.addEventListener('click', (e) => {
+      e.stopPropagation();
+      viewMonth--;
+      if (viewMonth < 0) {
+        viewMonth = 11;
+        viewYear--;
+      }
+      renderCalendarDays();
+    });
+  }
+
+  if (dpBtnNext) {
+    dpBtnNext.addEventListener('click', (e) => {
+      e.stopPropagation();
+      viewMonth++;
+      if (viewMonth > 11) {
+        viewMonth = 0;
+        viewYear++;
+      }
+      renderCalendarDays();
+    });
+  }
+
+  if (dpBtnCancel) {
+    dpBtnCancel.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeDatepicker();
+    });
+  }
+
+  if (dpBtnApply) {
+    dpBtnApply.addEventListener('click', (e) => {
+      e.stopPropagation();
+      applyDatepickerSelection();
+    });
+  }
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (dpModal && !dpModal.classList.contains('hidden')) {
+      if (!dpModal.contains(e.target) && !e.target.closest('.custom-datepicker')) {
+        closeDatepicker();
+      }
+    }
+  });
+
+  // Init all custom datepickers on the page
+  function initAllDatepickers() {
+    const today = new Date();
+    const todayStr = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+
+    document.querySelectorAll('.custom-datepicker').forEach((container) => {
+      const startInp = container.querySelector('.tab-date-start');
+      const endInp = container.querySelector('.tab-date-end');
+      const labelEl = container.querySelector('.dp-label');
+      const triggerBtn = container.querySelector('.dp-trigger');
+
+      if (startInp && !startInp.value) startInp.value = todayStr;
+      if (endInp && !endInp.value) endInp.value = todayStr;
+
+      if (labelEl) {
+        labelEl.textContent = getFormattedLabel(startInp ? startInp.value : todayStr, endInp ? endInp.value : todayStr);
+      }
+
+      if (triggerBtn) {
+        triggerBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (activeDpContainer === container && !dpModal.classList.contains('hidden')) {
+            closeDatepicker();
+          } else {
+            openDatepicker(container);
+          }
+        });
+      }
+    });
+  }
+  initAllDatepickers();
+
+  // Search & Filter Events
   ['ks-search', 'ks-nama'].forEach((id) => {
     const el = document.getElementById(id);
     if (el) {
@@ -87,6 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const tabName = btn.getAttribute('data-tab');
       const targetId = 'tab-' + tabName;
       document.getElementById(targetId)?.classList.add('active');
+      fetchData();
     });
   });
 
