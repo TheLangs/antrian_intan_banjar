@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnActiveMode = document.getElementById('btn-group-active');
 
   const btnPanggil = document.getElementById('btn-panggil');
+  const btnPanggilUlang = document.getElementById('btn-panggil-ulang');
   const btnSelesai = document.getElementById('btn-selesai');
   const btnLewati = document.getElementById('btn-lewati');
   const btnLogout = document.getElementById('btn-logout');
@@ -42,16 +43,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Events
   btnPanggil.addEventListener('click', callNext);
+  if (btnPanggilUlang) btnPanggilUlang.addEventListener('click', panggilUlangAktif);
   btnSelesai.addEventListener('click', () => setStatus('selesai'));
   btnLewati.addEventListener('click', () => setStatus('terlewat'));
   btnLogout.addEventListener('click', logout);
-  btnRefresh.addEventListener('click', async () => {
-    showLoader();
-    await fetchActiveQueue();
-    await fetchTerlewat();
-    await fetchCountWaiting();
-    hideLoader();
-  });
+  if (btnRefresh) {
+    btnRefresh.addEventListener('click', async () => {
+      showLoader();
+      await fetchActiveQueue();
+      await fetchTerlewat();
+      await fetchCountWaiting();
+      hideLoader();
+    });
+  }
 
   function showLoader() {
     loader.classList.remove('hidden');
@@ -104,11 +108,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         await fetchActiveQueue();
         await fetchCountWaiting();
       } else {
-        alert(data?.message || 'Tidak ada antrean yang menunggu.');
+        alert(data?.message || 'Tidak ada antrian yang menunggu.');
       }
     } catch (err) {
       console.error(err);
-      alert('Gagal memanggil antrean. Silakan coba lagi.');
+      alert('Gagal memanggil antrian. Silakan coba lagi.');
+    } finally {
+      hideLoader();
+    }
+  }
+
+  async function panggilUlangAktif() {
+    if (!currentActiveId) return;
+    showLoader();
+    try {
+      const noLengkap = elActiveNomor.textContent;
+      await supabase.channel('display-channel').send({
+        type: 'broadcast',
+        event: 'recall',
+        payload: {
+          id_loket: parseInt(idLoket),
+          nomor_lengkap: noLengkap,
+        },
+      });
+
+      await supabase
+        .from('antrian')
+        .update({ waktu_panggil: new Date().toISOString() })
+        .eq('id_antrian', currentActiveId);
+    } catch (err) {
+      console.error('Recall error:', err);
+      alert('Gagal memanggil ulang antrian.');
     } finally {
       hideLoader();
     }
@@ -146,7 +176,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     listTerlewat.innerHTML = '';
     if (error || !data || data.length === 0) {
-      listTerlewat.innerHTML = '<div class="text-center p-6 text-slate-400 text-sm font-medium">Tidak ada antrean terlewat.</div>';
+      listTerlewat.innerHTML = '<div class="text-center p-6 text-text-muted text-[13px] font-medium">Tidak ada antrian terlewat.</div>';
       return;
     }
 
@@ -157,16 +187,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       const div = document.createElement('div');
       div.className = 'flex items-center justify-between p-3 rounded-lg bg-surface-hover border border-transparent hover:border-border transition-colors';
       div.innerHTML = `
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded bg-surface border border-border flex items-center justify-center font-bold text-text-primary text-[15px]">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="min-w-[64px] px-2.5 py-1.5 h-10 rounded-lg bg-surface border border-border flex items-center justify-center font-bold text-text-primary text-[14px] whitespace-nowrap shrink-0 shadow-xs tracking-tight">
                   ${noLengkap}
               </div>
-              <div>
+              <div class="min-w-0 truncate">
                   <div class="font-semibold text-[14px] text-text-primary">Terlewat</div>
                   <div class="font-medium text-[12px] text-text-muted">Ambil: ${timeStr}</div>
               </div>
             </div>
-            <button class="btn-panggil-terlewat text-primary hover:bg-primary-fixed p-2 rounded-full transition-colors flex items-center justify-center" data-id="${item.id_antrian}" title="Panggil Ulang">
+            <button class="btn-panggil-terlewat text-primary hover:bg-primary-fixed p-2 rounded-full transition-colors flex items-center justify-center shrink-0" data-id="${item.id_antrian}" title="Panggil Ulang">
               <span class="material-symbols-outlined text-[20px]">replay</span>
             </button>
         `;
@@ -183,7 +213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function panggilTerlewat(targetId) {
     if (currentActiveId) {
-      alert('Selesaikan atau lewati antrean aktif saat ini terlebih dahulu.');
+      alert('Selesaikan atau lewati antrian aktif saat ini terlebih dahulu.');
       return;
     }
 
@@ -204,7 +234,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       await fetchActiveQueue();
       await fetchTerlewat();
     } catch (e) {
-      alert('Gagal memanggil antrean terlewat.');
+      alert('Gagal memanggil antrian terlewat.');
     } finally {
       hideLoader();
     }
@@ -230,7 +260,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (listMenunggu) {
         listMenunggu.innerHTML = '';
         if (!data || data.length === 0) {
-          listMenunggu.innerHTML = '<div class="text-center p-6 text-text-muted text-[13px] font-medium">Tidak ada antrean menunggu.</div>';
+          listMenunggu.innerHTML = '<div class="text-center p-6 text-text-muted text-[13px] font-medium">Tidak ada antrian menunggu.</div>';
         } else {
           data.forEach((item) => {
             const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
@@ -239,11 +269,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const div = document.createElement('div');
             div.className = 'flex items-center justify-between p-3 rounded-lg bg-surface-hover border border-transparent transition-colors';
             div.innerHTML = `
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded bg-surface border border-border flex items-center justify-center font-bold text-text-primary text-[15px]">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="min-w-[64px] px-2.5 py-1.5 h-10 rounded-lg bg-surface border border-border flex items-center justify-center font-bold text-text-primary text-[14px] whitespace-nowrap shrink-0 shadow-xs tracking-tight">
                     ${noLengkap}
                 </div>
-                <div>
+                <div class="min-w-0 truncate">
                   <div class="font-semibold text-[14px] text-text-primary">Menunggu Dipanggil</div>
                   <div class="font-medium text-[12px] text-text-muted">Ambil: ${timeStr}</div>
                 </div>

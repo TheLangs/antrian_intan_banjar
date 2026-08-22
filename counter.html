@@ -90,7 +90,7 @@
       <header class="bg-surface border-b border-border flex justify-between items-center h-16 px-6 fixed top-0 right-0 z-20 w-full left-0">
         <div class="text-[16px] font-semibold text-text-primary flex items-center gap-3">
           <img src="assets/images/logo-intan-banjar.png" alt="Logo Intan Banjar" class="w-8 h-8 object-contain" />
-          Sistem Informasi Manajemen Antrean Hybrid
+          Sistem Antrian Intan Banjar
         </div>
         <div class="flex items-center gap-4">
           <div id="conn-status" class="flex items-center gap-2 px-3 py-1 bg-success-bg rounded-full border border-success/20">
@@ -116,6 +116,12 @@
               <p class="text-[13px] text-text-secondary mt-0.5">Terminal Pelayanan</p>
             </div>
           </div>
+          <div class="flex items-center gap-3">
+            <button id="btn-refresh" class="flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-surface-hover hover:bg-slate-200/70 text-text-primary font-semibold text-[13px] transition-colors shadow-sm active:scale-95" title="Segarkan data antrian">
+              <span class="material-symbols-outlined text-[18px] text-primary">refresh</span>
+              <span>Segarkan Data</span>
+            </button>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -132,20 +138,29 @@
                   <div id="active-nomor" class="text-[120px] font-bold text-text-primary leading-none tracking-tighter tabular-nums transition-all">- - -</div>
                 </div>
 
-                <div class="inline-flex items-center gap-2 px-5 py-2.5 bg-surface-hover rounded-xl text-text-secondary text-[14px] font-medium mb-12 border border-border">
+                <div class="inline-flex items-center gap-2 px-5 py-2.5 bg-surface-hover rounded-xl text-text-secondary text-[14px] font-medium mb-10 border border-border">
                   <span class="material-symbols-outlined text-[18px]">groups</span>
-                  Sisa antrean menunggu: <strong id="cnt-menunggu" class="text-text-primary font-bold ml-1">0</strong> <span class="text-text-muted text-[13px]">orang</span>
+                  Sisa antrian menunggu: <strong id="cnt-menunggu" class="text-text-primary font-bold ml-1">0</strong> <span class="text-text-muted text-[13px]">orang</span>
                 </div>
 
                 <!-- Button group when active -->
-                <div id="btn-group-active" class="hidden grid-cols-2 gap-4 w-full max-w-md mx-auto relative z-10">
-                  <button id="btn-selesai" class="col-span-1 bg-success-bg border border-success/20 hover:bg-success/10 text-success font-semibold text-[15px] py-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
-                    <span class="material-symbols-outlined">check_circle</span> Selesai
-                  </button>
+                <div id="btn-group-active" class="hidden flex-col gap-3 w-full max-w-md mx-auto relative z-10">
+                  <div class="grid grid-cols-2 gap-3 w-full">
+                    <button
+                      id="btn-panggil-ulang"
+                      class="bg-surface border border-border text-text-primary hover:bg-surface-hover py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors text-[14px] shadow-sm active:scale-98">
+                      <span class="material-symbols-outlined text-[18px]">replay</span> Panggil Ulang
+                    </button>
+                    <button
+                      id="btn-selesai"
+                      class="bg-success-bg border border-success/30 hover:bg-success/15 text-success py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors text-[14px] shadow-sm active:scale-98">
+                      <span class="material-symbols-outlined text-[18px]">check_circle</span> Selesai
+                    </button>
+                  </div>
                   <button
                     id="btn-lewati"
-                    class="col-span-1 bg-surface border border-border hover:bg-error-bg hover:text-error hover:border-error/30 text-text-secondary font-semibold text-[15px] py-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
-                    <span class="material-symbols-outlined">skip_next</span> Lewati (Terlewat)
+                    class="w-full bg-surface border border-border hover:bg-error-bg hover:text-error hover:border-error/30 text-text-secondary py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors text-[14px] shadow-sm active:scale-98">
+                    <span class="material-symbols-outlined text-[18px]">skip_next</span> Lewati (Tidak Hadir)
                   </button>
                 </div>
 
@@ -155,37 +170,34 @@
                     id="btn-panggil"
                     class="w-full bg-primary hover:bg-surface-tint text-on-primary font-semibold text-[18px] py-5 rounded-2xl flex items-center justify-center gap-2 transition-colors ambient-shadow hover:-translate-y-0.5 transform duration-200">
                     <span class="material-symbols-outlined text-2xl">campaign</span>
-                    Panggil Penantre Berikutnya
+                    Panggil Antrian Berikutnya
                   </button>
                 </div>
               </div>
-            </div>
-            <div class="flex items-center justify-end px-2">
-              <button id="btn-refresh" class="text-[14px] text-primary hover:underline flex items-center font-medium gap-1.5 transition-colors"><span class="material-symbols-outlined text-[18px]">refresh</span> Segarkan Data</button>
             </div>
           </div>
 
           <!-- Sidebar Area (Right) -->
           <div class="lg:col-span-4 flex flex-col gap-5 h-[560px]">
-            <!-- Antrean Menunggu -->
+            <!-- Antrian Menunggu -->
             <div class="bg-surface rounded-xl card-shadow p-5 flex flex-col h-1/2">
               <div class="flex items-center justify-between mb-3 border-b border-border pb-3">
-                <h3 class="font-bold text-[17px] text-text-primary">Antrean Menunggu</h3>
+                <h3 class="font-bold text-[17px] text-text-primary">Antrian Menunggu</h3>
                 <span class="bg-surface-container px-3 py-1 rounded-full text-[11px] font-bold tracking-wider text-text-secondary uppercase"><span id="cnt-menunggu-badge">0</span> Total</span>
               </div>
               <div id="list-menunggu" class="flex-grow overflow-y-auto pr-2 space-y-2.5">
-                <div class="text-center p-6 text-text-muted text-[13px] font-medium">Tidak ada antrean menunggu.</div>
+                <div class="text-center p-6 text-text-muted text-[13px] font-medium">Tidak ada antrian menunggu.</div>
               </div>
             </div>
 
-            <!-- Antrean Terlewat -->
+            <!-- Antrian Terlewat -->
             <div class="bg-surface rounded-xl card-shadow p-5 flex flex-col h-1/2">
               <div class="flex items-center justify-between mb-3 border-b border-border pb-3">
-                <h3 class="font-bold text-[17px] text-text-primary">Antrean Terlewat</h3>
+                <h3 class="font-bold text-[17px] text-text-primary">Antrian Terlewat</h3>
                 <span class="bg-surface-container px-3 py-1 rounded-full text-[11px] font-bold tracking-wider text-text-secondary uppercase cursor-help" title="Membutuhkan Tindakan">Action</span>
               </div>
               <div id="list-terlewat" class="flex-grow overflow-y-auto pr-2 space-y-2.5">
-                <div class="text-center p-6 text-text-muted text-[13px] font-medium">Tidak ada antrean terlewat.</div>
+                <div class="text-center p-6 text-text-muted text-[13px] font-medium">Tidak ada antrian terlewat.</div>
               </div>
             </div>
           </div>
@@ -201,6 +213,6 @@
       </div>
     </div>
 
-    <script type="module" src="assets/js/counter.js?v=3"></script>
+    <script type="module" src="assets/js/counter.js?v=4"></script>
   </body>
 </html>

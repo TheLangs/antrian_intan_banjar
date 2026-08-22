@@ -49,6 +49,13 @@ CREATE TABLE IF NOT EXISTS public.antrian (
 ALTER PUBLICATION supabase_realtime ADD TABLE public.antrian;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.loket;
 
+-- Configure database timezone for Banjarmasin/Banjar (WITA / UTC+8)
+ALTER DATABASE postgres SET timezone TO 'Asia/Makassar';
+ALTER ROLE anon SET timezone TO 'Asia/Makassar';
+ALTER ROLE authenticated SET timezone TO 'Asia/Makassar';
+ALTER ROLE service_role SET timezone TO 'Asia/Makassar';
+ALTER ROLE postgres SET timezone TO 'Asia/Makassar';
+
 -- Indexes for high-performance querying
 CREATE INDEX IF NOT EXISTS idx_antrian_status_waktu ON public.antrian (status, waktu_ambil);
 CREATE INDEX IF NOT EXISTS idx_antrian_token ON public.antrian (access_token);
@@ -61,12 +68,12 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    v_today_start TIMESTAMPTZ := date_trunc('day', NOW());
+    v_today_start TIMESTAMPTZ := (date_trunc('day', NOW() AT TIME ZONE 'Asia/Makassar') AT TIME ZONE 'Asia/Makassar');
     v_next_no INT;
     v_new_id BIGINT;
     v_result json;
 BEGIN
-    -- Atomic Lock: Ambil nomor terakhir hari ini
+    -- Atomic Lock: Ambil nomor terakhir hari ini (WITA)
     SELECT COALESCE(MAX(nomor_antrian), 0) + 1
     INTO v_next_no
     FROM public.antrian
@@ -96,7 +103,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    v_today_start TIMESTAMPTZ := date_trunc('day', NOW());
+    v_today_start TIMESTAMPTZ := (date_trunc('day', NOW() AT TIME ZONE 'Asia/Makassar') AT TIME ZONE 'Asia/Makassar');
     v_active_id BIGINT;
     v_next_id BIGINT;
     v_queue_data RECORD;
