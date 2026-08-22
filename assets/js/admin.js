@@ -46,11 +46,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const dpBtnApply = document.getElementById('dp-btn-apply');
 
   let activeDpContainer = null;
+  let pivotDate = null;
   let tempStart = null;
   let tempEnd = null;
   let viewYear = new Date().getFullYear();
   let viewMonth = new Date().getMonth();
-  let selectStep = 0; // 0: start not picked, 1: start picked, picking end
+  let selectStep = 0; // 0: start not picked, 1: picking end (before or after pivot)
 
   function formatShortDate(isoStr) {
     if (!isoStr) return '';
@@ -169,8 +170,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     btn.addEventListener('mouseover', () => {
-      if (selectStep === 1 && tempStart && dateStr >= tempStart) {
-        highlightRangeHover(tempStart, dateStr);
+      if (selectStep === 1 && pivotDate) {
+        highlightRangeHover(pivotDate, dateStr);
       }
     });
 
@@ -179,36 +180,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function onDayClick(dateStr) {
     if (selectStep === 0) {
+      pivotDate = dateStr;
       tempStart = dateStr;
       tempEnd = dateStr;
       selectStep = 1;
     } else {
-      if (dateStr < tempStart) {
-        tempStart = dateStr;
-        tempEnd = dateStr;
-        selectStep = 1;
-      } else {
-        tempEnd = dateStr;
-        selectStep = 0;
-      }
+      // Step 1: user clicked the second date (can be before, equal, or after pivotDate)
+      const start = dateStr < pivotDate ? dateStr : pivotDate;
+      const end = dateStr < pivotDate ? pivotDate : dateStr;
+      tempStart = start;
+      tempEnd = end;
+      pivotDate = null;
+      selectStep = 0;
     }
     renderCalendarDays();
     updateModalSummary();
   }
 
-  function highlightRangeHover(startIso, hoverIso) {
+  function highlightRangeHover(pivotIso, hoverIso) {
+    const s = hoverIso < pivotIso ? hoverIso : pivotIso;
+    const e = hoverIso < pivotIso ? pivotIso : hoverIso;
+
+    if (dpSummaryText) {
+      dpSummaryText.textContent = getFormattedLabel(s, e);
+    }
+
     const buttons = dpDaysGrid.querySelectorAll('button[data-date]');
     buttons.forEach((b) => {
       const d = b.getAttribute('data-date');
-      const isStart = (d === startIso);
-      const isHover = (d === hoverIso);
-      const inBetween = (d > startIso && d < hoverIso);
+      const isStart = (d === s);
+      const isEnd = (d === e);
+      const inBetween = (d > s && d < e);
 
-      if (inBetween) {
+      // Reset dynamic range classes
+      b.classList.remove('!bg-blue-50', '!text-blue-900', '!bg-blue-800', '!text-white', 'rounded-l-lg', 'rounded-r-lg');
+
+      if (isStart && isEnd) {
+        b.classList.add('!bg-blue-800', '!text-white', 'rounded-lg', 'font-bold');
+      } else if (isStart) {
+        b.classList.add('!bg-blue-800', '!text-white', 'rounded-l-lg', 'font-bold');
+      } else if (isEnd) {
+        b.classList.add('!bg-blue-800', '!text-white', 'rounded-r-lg', 'font-bold');
+      } else if (inBetween) {
         b.classList.add('!bg-blue-50', '!text-blue-900');
-        b.classList.remove('rounded-lg');
-      } else if (!isStart && !isHover) {
-        b.classList.remove('!bg-blue-50', '!text-blue-900');
+      } else {
+        b.classList.add('rounded-lg');
       }
     });
   }
@@ -221,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const todayStr = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
     tempStart = (startInp && startInp.value) ? startInp.value : todayStr;
     tempEnd = (endInp && endInp.value) ? endInp.value : tempStart;
+    pivotDate = null;
     selectStep = 0;
 
     const [y, m] = tempStart.split('-');
@@ -342,6 +359,15 @@ document.addEventListener('DOMContentLoaded', () => {
     dpBtnApply.addEventListener('click', (e) => {
       e.stopPropagation();
       applyDatepickerSelection();
+    });
+  }
+
+  if (dpDaysGrid) {
+    dpDaysGrid.addEventListener('mouseleave', () => {
+      if (selectStep === 1 && pivotDate) {
+        highlightRangeHover(pivotDate, pivotDate);
+        updateModalSummary();
+      }
     });
   }
 
