@@ -90,7 +90,7 @@
       <header class="bg-surface border-b border-border flex justify-between items-center h-16 px-6 fixed top-0 right-0 z-20 w-full left-0">
         <div class="text-[16px] font-semibold text-text-primary flex items-center gap-3">
           <img src="assets/images/logo-intan-banjar.png" alt="Logo Intan Banjar" class="w-8 h-8 object-contain" />
-          Sistem Antrean Intan Banjar
+          Sistem Informasi Manajemen Antrean Hybrid
         </div>
         <div class="flex items-center gap-4">
           <div id="conn-status" class="flex items-center gap-2 px-3 py-1 bg-success-bg rounded-full border border-success/20">
@@ -121,7 +121,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <!-- Main Action Area -->
           <div class="lg:col-span-8 flex flex-col gap-4">
-            <div class="bg-surface rounded-xl card-shadow p-8 flex flex-col items-center justify-center relative overflow-hidden border-t-[5px] border-accent-water h-[560px]">
+            <div class="bg-surface rounded-xl card-shadow p-8 flex flex-col items-center justify-center relative overflow-hidden border-t-[5px] border-accent-water min-h-[450px]">
               <div class="absolute -right-24 -top-24 w-64 h-64 bg-accent-water/5 rounded-full blur-3xl"></div>
               <div class="absolute -left-24 -bottom-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
 
@@ -137,29 +137,25 @@
                   Sisa antrean menunggu: <strong id="cnt-menunggu" class="text-text-primary font-bold ml-1">0</strong> <span class="text-text-muted text-[13px]">orang</span>
                 </div>
 
-                <!-- Unified Button Group -->
-                <div id="action-buttons" class="flex flex-col gap-3 w-full max-w-md mx-auto relative z-10 mt-6">
-                  <button
-                    id="btn-panggil"
-                    class="w-full bg-primary hover:bg-surface-tint text-on-primary font-bold text-[16px] py-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hidden">
-                    <span class="material-symbols-outlined">campaign</span> Panggil Penantre Berikutnya
+                <!-- Button group when active -->
+                <div id="btn-group-active" class="hidden grid-cols-2 gap-4 w-full max-w-md mx-auto relative z-10">
+                  <button id="btn-selesai" class="col-span-1 bg-success-bg border border-success/20 hover:bg-success/10 text-success font-semibold text-[15px] py-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
+                    <span class="material-symbols-outlined">check_circle</span> Selesai
                   </button>
-                  <div id="btn-group-active" class="grid grid-cols-2 gap-3 hidden">
-                    <button
-                      id="btn-panggil-ulang"
-                      class="bg-surface border border-border text-text-primary hover:bg-surface-hover py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[14px]">
-                      <span class="material-symbols-outlined">replay</span> Panggil Ulang
-                    </button>
-                    <button
-                      id="btn-selesai"
-                      class="bg-success-bg/30 text-success border border-success/30 hover:bg-success-bg py-4 rounded-xl font-bold flex flex-center items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[14px]">
-                      <span class="material-symbols-outlined">check_circle</span> Selesai
-                    </button>
-                  </div>
                   <button
                     id="btn-lewati"
-                    class="w-full bg-surface border border-border text-text-secondary hover:text-error hover:bg-error-bg/30 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-[14px] hidden">
-                    <span class="material-symbols-outlined">skip_next</span> Lewati (Tidak Hadir)
+                    class="col-span-1 bg-surface border border-border hover:bg-error-bg hover:text-error hover:border-error/30 text-text-secondary font-semibold text-[15px] py-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
+                    <span class="material-symbols-outlined">skip_next</span> Lewati (Terlewat)
+                  </button>
+                </div>
+
+                <!-- Button group when NO active ticket -->
+                <div id="btn-group-next" class="block w-full max-w-md mx-auto relative z-10">
+                  <button
+                    id="btn-panggil"
+                    class="w-full bg-primary hover:bg-surface-tint text-on-primary font-semibold text-[18px] py-5 rounded-2xl flex items-center justify-center gap-2 transition-colors ambient-shadow hover:-translate-y-0.5 transform duration-200">
+                    <span class="material-symbols-outlined text-2xl">campaign</span>
+                    Panggil Penantre Berikutnya
                   </button>
                 </div>
               </div>

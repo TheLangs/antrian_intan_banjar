@@ -11,16 +11,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  document.getElementById('header-info').innerHTML = `Loket ${idLoket} <span class="text-text-secondary text-[14px] ml-2 font-normal">• ${namaPetugas}</span>`;
+  document.getElementById('header-info').innerHTML = `Loket ${idLoket} <span class="text-text-secondary text-[14px] ml-2 font-normal">• Petugas: ${namaPetugas}</span>`;
 
   // UI Elements
   const elActiveNomor = document.getElementById('active-nomor');
+  const btnNextMode = document.getElementById('btn-group-next');
+  const btnActiveMode = document.getElementById('btn-group-active');
 
   const btnPanggil = document.getElementById('btn-panggil');
-  const btnPanggilUlang = document.getElementById('btn-panggil-ulang');
   const btnSelesai = document.getElementById('btn-selesai');
   const btnLewati = document.getElementById('btn-lewati');
-  const btnGroupActive = document.getElementById('btn-group-active');
   const btnLogout = document.getElementById('btn-logout');
   const btnRefresh = document.getElementById('btn-refresh');
 
@@ -42,7 +42,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Events
   btnPanggil.addEventListener('click', callNext);
-  btnPanggilUlang.addEventListener('click', panggilUlangAktif);
   btnSelesai.addEventListener('click', () => setStatus('selesai'));
   btnLewati.addEventListener('click', () => setStatus('terlewat'));
   btnLogout.addEventListener('click', logout);
@@ -80,15 +79,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!error && data) {
       currentActiveId = data.id_antrian;
       elActiveNomor.textContent = `${data.kode_antrian}-${String(data.nomor_antrian).padStart(3, '0')}`;
-      btnPanggil.classList.add('hidden');
-      btnGroupActive.classList.remove('hidden');
-      btnLewati.classList.remove('hidden');
+      btnNextMode.classList.add('hidden');
+      btnActiveMode.classList.remove('hidden');
+      btnActiveMode.classList.add('flex');
     } else {
       currentActiveId = null;
       elActiveNomor.textContent = '- - -';
-      btnPanggil.classList.remove('hidden');
-      btnGroupActive.classList.add('hidden');
-      btnLewati.classList.add('hidden');
+      btnNextMode.classList.remove('hidden');
+      btnActiveMode.classList.add('hidden');
+      btnActiveMode.classList.remove('flex');
     }
   }
 
@@ -110,18 +109,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) {
       console.error(err);
       alert('Gagal memanggil antrean. Silakan coba lagi.');
-    } finally {
-      hideLoader();
-    }
-  }
-
-  async function panggilUlangAktif() {
-    if (!currentActiveId) return;
-    showLoader();
-    try {
-      await supabase.from('antrian').update({ waktu_panggil: new Date().toISOString() }).eq('id_antrian', currentActiveId);
-    } catch (err) {
-      console.error(err);
     } finally {
       hideLoader();
     }
@@ -165,9 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     data.forEach((item) => {
       const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
-      let wkt = item.waktu_ambil;
-      if (!wkt.endsWith('Z') && !wkt.includes('+')) wkt += 'Z';
-      const timeStr = new Date(wkt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':');
+      const timeStr = new Date(item.waktu_ambil).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':');
 
       const div = document.createElement('div');
       div.className = 'flex items-center justify-between p-3 rounded-lg bg-surface-hover border border-transparent hover:border-border transition-colors';
@@ -249,9 +234,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
           data.forEach((item) => {
             const noLengkap = `${item.kode_antrian}-${String(item.nomor_antrian).padStart(3, '0')}`;
-            let wkt = item.waktu_ambil;
-            if (!wkt.endsWith('Z') && !wkt.includes('+')) wkt += 'Z';
-            const timeStr = new Date(wkt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':');
+            const timeStr = new Date(item.waktu_ambil).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':');
 
             const div = document.createElement('div');
             div.className = 'flex items-center justify-between p-3 rounded-lg bg-surface-hover border border-transparent transition-colors';
