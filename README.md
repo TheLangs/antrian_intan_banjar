@@ -93,18 +93,10 @@ Sistem antrian konvensional seringkali memaksa pelanggan untuk duduk diam di rua
 │       └── MASTER.md       # Panduan Desain & Standar UI/UX (SSOT)
 │
 └── docs/
-    ├── DOKUMENTASI_LENGKAP.md # Dokumentasi Alur & Arsitektur Lengkap untuk Laporan
     ├── schema.sql          # Skema Database PostgreSQL, RPC & Trigger
     ├── DIAGRAM_SYSTEM.md   # Diagram Konteks, DFD & Use Case
     └── PRD_Sistem_Antrian_Supabase.md # Product Requirement Document
 ```
-
----
-
-## 📖 Dokumentasi Lengkap untuk Laporan
-
-Untuk penjelasan mendalam mengenai alur kerja sistem, diagram alir, relasi basis data, dan referensi penyusunan bab laporan/karya ilmiah, silakan baca:
-👉 **[DOKUMENTASI_LENGKAP.md](docs/DOKUMENTASI_LENGKAP.md)**
 
 ---
 
