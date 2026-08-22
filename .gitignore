@@ -3,12 +3,12 @@
 Thumbs.db
 desktop.ini
 
-# Environment / Sensitive Keys (jika nanti ada file env lokal)
+# Environment & Credentials
 .env
 .env.local
 .env.*.local
 
-# IDE & Editor Temporary Folders
+# IDE & Editor
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
@@ -19,26 +19,27 @@ desktop.ini
 *.sln
 *.sw?
 
-# Node & Package Caches (jika ada tool build)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Antigravity artifacts / Temporary Logs
+# Agent Skills, MCP & AI Artifacts
+.agents/
+.agent/
+.gemini/
+skills-lock.json
+.playwright-mcp/
+graphify-out/
 *.log
+
+# Temporary / Scratch Files
 tmp/
 dist/
 build/
-.agent/
-skills-lock.json
-.gemini/
-*.js
-!assets/**/*.js
-!*/**/*.js
+scratch/
+fix.py
+fix_dom.js
+fix_screenshot.webp
+git_log.txt
 mcp_out.json
-.env
-tmp/
-.agents/
-.playwright-mcp/
+merge.js
+newLogic.txt
+newMiniBars.txt
+test_supa.js
 
